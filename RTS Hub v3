@@ -293,6 +293,203 @@ SettingsSection:Toggle({
     end
 })
 
+-- =========================================================================
+-- แท็บที่ 4: ระบบ ESP มองทะลุ (Box, Tracer, Name, Distance)
+-- =========================================================================
+local TabESP = Window:Tab({ Title = "4. ระบบ ESP มองทะลุ", Icon = "eye" })
+
+local ESPSection = TabESP:Section({
+    Title = "ตั้งค่าการแสดงผล ESP",
+    Box = true, BoxBorder = true, Opened = true
+})
+
+local isESPActive = false
+local espShowBox = true
+local espShowTracer = true
+local espShowName = true
+local espShowDistance = true
+
+ESPSection:Toggle({
+    Title = "เปิด/ปิด ระบบ ESP ทั้งหมด",
+    Value = false,
+    Callback = function(state)
+        isESPActive = state
+        WindUI:Notify({ Title = "ESP System", Content = state and "เปิดระบบ ESP แล้ว" or "ปิดระบบ ESP แล้ว", Duration = 2 })
+    end
+})
+
+ESPSection:Toggle({ Title = "แสดงกรอบสี่เหลี่ยม (Box ESP)", Value = true, Callback = function(state) espShowBox = state end })
+ESPSection:Toggle({ Title = "แสดงเส้นโยง (Tracer Line)", Value = true, Callback = function(state) espShowTracer = state end })
+ESPSection:Toggle({ Title = "แสดงชื่อและระยะทาง", Value = true, Callback = function(state) espShowName = state; espShowDistance = state end })
+
+local espDrawings = {}
+local function removeESP(player)
+    if espDrawings[player] then
+        for _, obj in pairs(espDrawings[player]) do
+            pcall(function() obj:Remove() end)
+        end
+        espDrawings[player] = nil
+    end
+end
+
+RunService.RenderStepped:Connect(function()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            if isESPActive and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+                local character = player.Character
+                local hrp = character.HumanoidRootPart
+                
+                if not espDrawings[player] then
+                    espDrawings[player] = {
+                        Box = Drawing.new("Square"),
+                        Tracer = Drawing.new("Line"),
+                        Info = Drawing.new("Text")
+                    }
+                    espDrawings[player].Box.Filled = false
+                    espDrawings[player].Box.Thickness = 1.5
+                    espDrawings[player].Box.Color = Color3.fromRGB(138, 43, 226)
+                    espDrawings[player].Tracer.Thickness = 1
+                    espDrawings[player].Tracer.Color = Color3.fromRGB(138, 43, 226)
+                    espDrawings[player].Info.Size = 14
+                    espDrawings[player].Info.Center = true
+                    espDrawings[player].Info.Outline = true
+                    espDrawings[player].Info.Color = Color3.fromRGB(255, 255, 255)
+                end
+
+                local visuals = espDrawings[player]
+                local vector, onScreen = Camera:WorldToViewportPoint(hrp.Position)
+
+                if onScreen then
+                    local head = character:FindFirstChild("Head")
+                    local topVector = head and Camera:WorldToViewportPoint(head.Position + Vector3.new(0, 0.5, 0)) or vector
+                    local bottomVector = Camera:WorldToViewportPoint(hrp.Position - Vector3.new(0, 3, 0))
+                    local height = math.abs(topVector.Y - bottomVector.Y)
+                    local width = height / 2
+
+                    if espShowBox then
+                        visuals.Box.Visible = true
+                        visuals.Box.Size = Vector2.new(width, height)
+                        visuals.Box.Position = Vector2.new(vector.X - width / 2, topVector.Y)
+                    else
+                        visuals.Box.Visible = false
+                    end
+
+                    if espShowTracer then
+                        visuals.Tracer.Visible = true
+                        visuals.Tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+                        visuals.Tracer.To = Vector2.new(vector.X, bottomVector.Y)
+                    else
+                        visuals.Tracer.Visible = false
+                    end
+
+                    if espShowName then
+                        visuals.Info.Visible = true
+                        local dist = math.floor((Camera.CFrame.Position - hrp.Position).Magnitude)
+                        visuals.Info.Text = player.Name .. " [" .. dist .. "m]"
+                        visuals.Info.Position = Vector2.new(vector.X, topVector.Y - 18)
+                    else
+                        visuals.Info.Visible = false
+                    end
+                else
+                    visuals.Box.Visible = false
+                    visuals.Tracer.Visible = false
+                    visuals.Info.Visible = false
+                end
+            else
+                removeESP(player)
+            end
+        end
+    end
+end)
+
+Players.PlayerRemoving:Connect(function(player) removeESP(player) end)
+
+-- =========================================================================
+-- แท็บที่ 5: เช็คเซิร์ฟเวอร์ & วาร์ปผู้เล่น (TP Player)
+-- =========================================================================
+local TabServer = Window:Tab({ Title = "5. เช็คเซิร์ฟ & วาร์ปคน", Icon = "users" })
+
+local ServerSection = TabServer:Section({
+    Title = "ข้อมูลและเทเลพอร์ตข้ามผู้เล่น",
+    Box = true, BoxBorder = true, Opened = true
+})
+
+ServerSection:Button({
+    Title = "📊 คนในเซิร์ฟ: " .. #Players:GetPlayers() .. "/" .. Players.MaxPlayers,
+    Callback = function()
+        WindUI:Notify({ Title = "Server Info", Content = "จำนวนผู้เล่นปัจจุบัน: " .. #Players:GetPlayers() .. " คน", Duration = 2 })
+    end
+})
+
+ServerSection:Button({
+    Title = "📋 คัดลอก Server JobID",
+    Callback = function()
+        if setclipboard then
+            setclipboard(game.JobId)
+            WindUI:Notify({ Title = "สำเร็จ", Content = "คัดลอก Server JobID เรียบร้อย!", Duration = 2 })
+        end
+        end
+    end
+})
+
+-- =========================================================================
+-- แท็บที่ 6: สถานะระบบ (FPS / Ping) & กันหลุด (Anti-AFK)
+-- =========================================================================
+local TabStatus = Window:Tab({ Title = "6. สถานะระบบ & AFK", Icon = "cpu" })
+
+local StatusSection = TabStatus:Section({
+    Title = "ทรัพยากรและการตั้งค่าเน็ตเวิร์ก",
+    Box = true, BoxBorder = true, Opened = true
+})
+
+local FPSTag = Window:Tag({ Title = "FPS: 0", Color = Color3.fromRGB(100, 150, 255) })
+local PingTag = Window:Tag({ Title = "Ping: 0ms", Color = Color3.fromRGB(100, 200, 255) })
+
+local lastUpdate = tick()
+local frameCount = 0
+
+RunService.RenderStepped:Connect(function()
+    frameCount = frameCount + 1
+    local now = tick()
+    if now - lastUpdate >= 1 then
+        local fps = math.floor(frameCount / (now - lastUpdate))
+        FPSTag:SetTitle("FPS: " .. fps)
+        frameCount = 0
+        lastUpdate = now
+    end
+end)
+
+task.spawn(function()
+    while true do
+        local success, ping = pcall(function()
+            return math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue())
+        end)
+        if success and ping then PingTag:SetTitle("Ping: " .. ping .. "ms") end
+        task.wait(2)
+    end
+end)
+
+local antiAfkConnection
+StatusSection:Toggle({
+    Title = "เปิดระบบกันหลุด (Anti-AFK)",
+    Value = false,
+    Callback = function(state)
+        if state then
+            local vu = game:GetService("VirtualUser")
+            antiAfkConnection = LocalPlayer.Idled:Connect(function()
+                vu:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+                task.wait(1)
+                vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+            end)
+            WindUI:Notify({ Title = "Anti-AFK", Content = "เปิดใช้งานกันหลุดเรียบร้อย", Duration = 2 })
+        else
+            if antiAfkConnection then antiAfkConnection:Disconnect() antiAfkConnection = nil end
+            WindUI:Notify({ Title = "Anti-AFK", Content = "ปิดระบบกันหลุดแล้ว", Duration = 2 })
+        end
+    end
+})
+
+
 
 -- =========================================================================
 -- ระบบแสดงผล FPS และ Ping ด้านบนหน้าจอ (Tags)
