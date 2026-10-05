@@ -10,15 +10,6 @@ if not success or not WindUI then
     return
 end
 
-WindUI:Notify({
-    Title = "Hallo to RTS-HUB",
-    Content = "Operation completed successfully",
-    Icon = "check-circle",
-    Duration = 3, --second
-})
-
-loadstring(game:HttpGet("https://raw.githubusercontent.com/hacker0030mp/Hac/refs/heads/main/R%20HLKGVUIDS8O%20"))()
-
 -- ตั้งค่าธีม Violet เริ่มต้น
 pcall(function()
     WindUI:AddTheme({
@@ -57,6 +48,12 @@ local VALID_KEYS = {
     "STR.KEY-5M6C3N8Q-7J2W", "STR.KEY-2X1P9L4T-3H6B", "STR.KEY-9H7W5F2J-1R4C", "STR.KEY-4N3K8V6X-5P9Z", "STR.KEY-6R1M2C7N-8W3T",
     "STR.KEY-7J8Q4H1P-2K5F", "STR.KEY-1V9T6X3M-7L8N", "STR.KEY-3B5Z7R9W-4V1Q", "STR.KEY-8P2F1N4K-6C9H", "STR.KEY-5C4H6T8V-9J2R"
 }
+
+WindUI:Notify({
+    Title = "Welcome to the camp! RTS-HUB",
+    Content = "Operation completed successfully",
+    Duration = 3
+})
 
 -- สร้างหน้าต่างหลัก
 local Window = WindUI:CreateWindow({
@@ -150,7 +147,7 @@ MainSection:Button({
                 
                 -- เพิ่มปุ่มในหมวดหมู่บันทึกพร้อมเลขอ้างอิง
                 SavedSection:Button({
-                    Title = "📁 " .. savedName .. " #" .. currentId,
+                    Title = "Save script" .. savedName .. " #" .. currentId,
                     Callback = function()
                         pcall(function() loadstring(savedCode)() end)
                         WindUI:Notify({ Title = "โหลดสคริปต์", Content = "กำลังรัน: " .. savedName .. " (#" .. currentId .. ")", Duration = 2 })
@@ -213,102 +210,87 @@ SettingsSection:Toggle({
     end
 })
 
-local Toggle = Tab:Toggle({
-    Title = "Enable Feature",
-    Desc = "Toggle description", -- optional
-    Icon = "power", -- lucide icon or "rbxassetid://". optional
-    Value = false, -- initial state. optional
-    Type = "Toggle", -- "Toggle" or "Checkbox". optional
-    Locked = false, -- disable toggle. optional
-    Flag = "my_toggle", -- for config saving. optional
-    Callback = function(state)
-        print("State changed:", state)
-    end
+WindUI:Notify({
+    Title = "FPS",
+    Content = "Operation completed successfully",
+    Duration = 3
+})
+Tab:Paragraph({
+    Title = "FPS",
+    Desc = "Basic paragraph text"
+})
+
+-- your tag
+local FPSTag = Window:Tag({
+    Title = "FPS: 0",
+    Color = Color3.fromRGB(100, 150, 255),
+})
+ 
 local RunService = game:GetService("RunService")
-local Camera = workspace.CurrentCamera
-
-local Settings = {
-    Enabled = true,
-    Color = Color3.fromRGB(255, 255, 255), -- สีดำ (ปรับเปลี่ยนได้)
-    Radius = 45,                           -- ขนาดรัศมีวงกลมรอบนอก
-    Size = 12,                             -- ความยาวของเส้นบวก
-    Thickness = 2,                         -- ความหนา
-    RotationSpeed = 3                      -- ความเร็วในการหมุน (เลขมากยิ่งหมุนเร็ว)
-}
-
--- สร้างเส้นบวก 4 เส้น และวงกลม 1 วง
-local lines = {}
-for i = 1, 4 do
-    local line = Drawing.new("Line")
-    line.Visible = Settings.Enabled
-    line.Color = Settings.Color
-    line.Thickness = Settings.Thickness
-    line.Transparency = 1
-    table.insert(lines, line)
-end
-
-local circle = Drawing.new("Circle")
-circle.Visible = Settings.Enabled
-circle.Color = Settings.Color
-circle.Thickness = 1.5
-circle.NumSides = 32
-circle.Radius = Settings.Radius
-circle.Filled = false
-circle.Transparency = 1
-
-local currentAngle = 0
-
-local connection
-connection = RunService.RenderStepped:Connect(function(dt)
-    if not Settings.Enabled then
-        for _, line in ipairs(lines) do line.Visible = false end
-        circle.Visible = false
-        return
-    end
-
-    local viewportSize = Camera.ViewportSize
-    local center = Vector2.new(viewportSize.X / 2, viewportSize.Y / 2)
-
-    -- อัปเดตวงกลมรอบนอก
-    circle.Visible = true
-    circle.Position = center
-    circle.Radius = Settings.Radius
-    circle.Color = Settings.Color
-
-    -- คำนวณการหมุน (เพิ่มมุมเรื่อยๆ ทุกเฟรม)
-    currentAngle = currentAngle + (Settings.RotationSpeed * dt)
-
-    -- คำนวณตำแหน่งเส้นบวก 4 ทิศทางแบบหมุนได้
-    for i = 1, 4 do
-        local line = lines[i]
-        line.Visible = true
-        line.Color = Settings.Color
-        line.Thickness = Settings.Thickness
-
-        -- มุมของแต่ละแขน (ห่างกัน 90 องศา หรือ รอบละ pi/2)
-        local angle = currentAngle + ((i - 1) * (math.pi / 2))
+local lastUpdate = tick()
+local frameCount = 0
+ 
+RunService.RenderStepped:Connect(function()
+    frameCount = frameCount + 1
+    local now = tick()
+    
+    if now - lastUpdate >= 1 then
+        local fps = math.floor(frameCount / (now - lastUpdate))
+        FPSTag:SetTitle("FPS: " .. fps)
         
-        -- จุดเริ่มต้น (ใกล้กลาง) และจุดสิ้นสุด (ยื่นออกไปตามความยาว Size)
-        local innerDist = 4 -- ระยะห่างจากจุดศูนย์กลางเล็กน้อย
-        local outerDist = innerDist + Settings.Size
-
-        local p1 = Vector2.new(center.X + math.cos(angle) * innerDist, center.Y + math.sin(angle) * innerDist)
-        local p2 = Vector2.new(center.X + math.cos(angle) * outerDist, center.Y + math.sin(angle) * outerDist)
-
-        line.From = p1
-        line.To = p2
+        if fps >= 50 then
+            FPSTag:SetColor(Color3.fromRGB(0, 255, 0)) -- Green
+        elseif fps >= 30 then
+            FPSTag:SetColor(Color3.fromRGB(255, 200, 0)) -- Yellow
+        else
+            FPSTag:SetColor(Color3.fromRGB(255, 0, 0)) -- Red
+        end
+        
+        
+        frameCount = 0
+        lastUpdate = now
     end
 end)
 
-SettingsSection:Toggle({
-    Title = "เปิด/ปิด ล็อคเป้าผู้เล่นใกล้สุด",
-    Desc = "หันเป้าตามผู้เล่นที่ใกล้ที่สุดในระยะการมองเห็นอัตโนมัติ",
-    Value = false,
-    Callback = function(state)
-        AimSettings.Enabled = state
-        WindUI:Notify({ Title = "AimLock", Content = state and "เปิดระบบล็อคเป้าแล้ว" or "ปิดระบบล็อคเป้าแล้ว", Duration = 2 })
-    end
+WindUI:Notify({
+    Title = "signal ",
+    Content = "Operation completed successfully",
+    Duration = 3
 })
+Tab:Paragraph({
+    Title = "signal ",
+    Desc = "Basic paragraph text"
+})
+local PingTag = Window:Tag({
+    Title = "Ping: 0ms",
+    Color = Color3.fromRGB(100, 200, 255),
+})
+ 
+task.spawn(function()
+    while true do
+        local success, ping = pcall(function()
+            local Stats = game:GetService("Stats")
+            local pingValue = Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
+            return math.floor(pingValue)
+        end)
+        
+        if success and ping then
+            PingTag:SetTitle("Ping: " .. ping .. "ms")
+            
+            if ping <= 50 then
+                PingTag:SetColor(Color3.fromRGB(0, 255, 0)) -- Green
+            elseif ping <= 100 then
+                PingTag:SetColor(Color3.fromRGB(255, 200, 0)) -- Yellow
+            elseif ping <= 200 then
+                PingTag:SetColor(Color3.fromRGB(255, 150, 0)) -- Orange
+            else
+                PingTag:SetColor(Color3.fromRGB(255, 0, 0)) -- Red
+            end
+        end
+        
+        task.wait(2)
+    end
+end)
 
 -- =========================================================================
 -- SYSTEM: AIMLOCK / TARGET NEAREST PLAYER IN FOV
@@ -378,181 +360,84 @@ end)
 -- connection:Disconnect()
 -- for _, line in ipairs(lines) do line:Remove() end
 -- circle:Remove()
-
-
 })
 
-
-
--- =========================================================================
--- แท็บที่ 5: ธีมสี (Color Customization)
--- =========================================================================
-WindUI:AddTheme({
-    -- More soon!
-    
-    Primary = Color3.fromHex("#a1a1aa"), -- Icon
-    
-    White = Color3.new(1,1,1),
-    Black = Color3.new(0,0,0),
-    
-    Dialog = Color3.fromHex("#18181b"), -- Accent
-    
-    Background = Color3.fromHex("#101010"), -- Accent
-    BackgroundTransparency = 0,
-    Hover = Color3.fromHex("#FFFFFF"), -- Text
- 
-    PanelBackground = Color3.new(1,1,1), -- White
-    PanelBackgroundTransparency = .95,
-    
-    WindowBackground = Color3.fromHex("#101010"), -- Background
-    
-    WindowShadow = Color3.new(0,0,0), -- Black
-    --WindowShadowTransparency = .7,
-    
-    WindowTopbarTitle = Color3.fromHex("#FFFFFF"), -- Text
-    WindowTopbarAuthor = Color3.fromHex("#FFFFFF"), -- Text
-    WindowTopbarIcon = Color3.fromHex("#a1a1aa"), -- Icon
-    WindowTopbarButtonIcon = Color3.fromHex("#a1a1aa"), -- Icon
-    
-    WindowSearchBarBackground = Color3.fromHex("#101010"), -- Background
-    
-    TabBackground = Color3.fromHex("#FFFFFF"), -- Hover
-    TabBackgroundHover = Color3.fromHex("#FFFFFF"), -- Hover
-    TabBackgroundHoverTransparency = .97,
-    TabBackgroundActive = Color3.fromHex("#FFFFFF"), -- Hover
-    TabBackgroundActiveTransparency = 0.93,
-    TabText = Color3.fromHex("#FFFFFF"), -- Text
-    TabTextTransparency = 0.3,
-    TabTextTransparencyActive = 0,
-    TabTitle = Color3.fromHex("#FFFFFF"), -- Text
-    TabIcon = Color3.fromHex("#a1a1aa"), -- Icon
-    TabIconTransparency = 0.4,
-    TabIconTransparencyActive = 0.1,
-    TabBorderTransparency = 1,
-    TabBorderTransparencyActive = 0.75,
-    TabBorder = Color3.new(1,1,1), -- White
- 
-    
-    ElementBackground = Color3.fromHex("#FFFFFF"), -- Text
-    ElementBackgroundTransparency = .93,
-    ElementBackgroundHover = WindUI.Creator:AddColor("ElementBackground", "#ffffff", 1/10),
-    ElementTitle = Color3.fromHex("#FFFFFF"), -- Text
-    ElementDesc = Color3.fromHex("#FFFFFF"), -- Text
-    ElementIcon = Color3.fromHex("#a1a1aa"), -- Icon
-    
-    PopupBackground = Color3.fromHex("#101010"), -- Background
-    PopupBackgroundTransparency = "BackgroundTransparency",
-    PopupTitle = Color3.fromHex("#FFFFFF"), -- Text
-    PopupContent = Color3.fromHex("#FFFFFF"), -- Text
-    PopupIcon = Color3.fromHex("#a1a1aa"), -- Icon
-    
-    DialogBackground = Color3.fromHex("#101010"), -- Background
-    DialogBackgroundTransparency = "BackgroundTransparency",
-    DialogTitle = Color3.fromHex("#FFFFFF"), -- Text
-    DialogContent = Color3.fromHex("#FFFFFF"), -- Text
-    DialogIcon = Color3.fromHex("#a1a1aa"), -- Icon
-    
-    Toggle = Color3.fromHex("#52525b"), -- Button
-    ToggleBar = Color3.new(1,1,1), -- White
-    
-    Checkbox = Color3.fromHex("#0091FF"), -- Primary
-    CheckboxIcon = Color3.new(1,1,1), -- White
-    CheckboxBorder = Color3.new(1,1,1), -- White
-    CheckboxBorderTransparency = .75,
-    
-    SliderIcon = Color3.fromHex("#a1a1aa"), -- Icon
- 
-    Slider = Color3.fromHex("#0091FF"), -- Primary
-    SliderThumb = Color3.new(1,1,1), -- White
-    SliderIconFrom = Color3.fromHex("#a1a1aa"), -- SliderIcon
-    SliderIconTo = Color3.fromHex("#a1a1aa"), -- SliderIcon
-    
-    Tooltip = Color3.fromHex("4C4C4C"),
-    TooltipText = Color3.new(1,1,1), -- White
-    TooltipSecondary = Color3.fromHex("#0091FF"), -- Primary
-    TooltipSecondaryText = Color3.new(1,1,1), -- White
- 
-    TabSectionIcon = Color3.fromHex("#a1a1aa"), -- Icon
- 
-    SectionIcon = Color3.fromHex("#a1a1aa"), -- Icon
-    
-    SectionExpandIcon = Color3.new(1,1,1), -- White
-    SectionExpandIconTransparency = .4,
-    SectionBox = Color3.new(1,1,1), -- White
-    SectionBoxTransparency = .95,
-    SectionBoxBorder = Color3.new(1,1,1), -- White
-    SectionBoxBorderTransparency = .75,
-    SectionBoxBackground = Color3.new(1,1,1), -- White
-    SectionBoxBackgroundTransparency = .95,
-    
-    SearchBarBorder = Color3.new(1,1,1), -- White
-    SearchBarBorderTransparency = .75,
-    
-    Notification = Color3.fromHex("#101010"), -- Background
-    NotificationTitle = Color3.fromHex("#FFFFFF"), -- Text
-    NotificationTitleTransparency = 0,
-    NotificationContent = Color3.fromHex("#FFFFFF"), -- Text
-    NotificationContentTransparency = .4,
-    NotificationDuration = Color3.new(1,1,1), -- White
-    NotificationDurationTransparency = .95,
-    NotificationBorder = Color3.new(1,1,1), -- White
-    NotificationBorderTransparency = .75,
-    
-    DropdownTabBorder = Color3.new(1,1,1), -- White
- 
-    LabelBackground = Color3.new(1,1,1), -- White
-    LabelBackgroundTransparency = .95,
-})
-
--- =========================================================================
--- แท็บที่ 6: ข้อมูลเพิ่มเติม
--- =========================================================================
-local Tab5 = Window:Tab({ Title = "ข้อมูล", Icon = "info" })
-
-local InfoSection = Tab5:Section({
-    Title = "ช่องทางติดต่อและสนับสนุน",
-    Box = true,
-    BoxBorder = true,
-    Opened = true
-})
-
-InfoSection:Button({
-    Title = "ดิสคอร์ด",
-    Callback = function()
-        if setclipboard then
-            setclipboard("https://discord.gg/PKufHrB9zE")
-            WindUI:Notify({ Title = "สำเร็จ", Content = "คัดลอกลิงก์ Discord แล้ว!", Duration = 3 })
-        end
-    end
-})
- =========================================================================
-local Tab4 = Window:Tab({ Title = "การตั้งค่า", Icon = "settings" })
-
-local SettingsSection = Tab4:Section({
-    Title = "ตั้งค่า UI และเมนู",
-    Box = true,
-    BoxBorder = true,
-    Opened = true
-})
-
-SettingsSection:Slider({
-    Title = "ความคมชัด",
-    Value = {
-        Min = 0,
-        Max = 100,
-        Default = 50
-    },
-    Callback = function(value)
-        print("ปรับความคมชัดเป็น:", value)
-    end
-})
-
-SettingsSection:Toggle({
-    Title = "เปิด/ปิด เอฟเฟกต์เมนู",
+local Toggle = Tab:Toggle({
+    Title = "FPS",
     Callback = function(state)
-        print("Menu Effect:", state)
+        print("Toggle state:", state)
     end
 })
+
+-- your tag
+local FPSTag = Window:Tag({
+    Title = "FPS: 0",
+    Color = Color3.fromRGB(100, 150, 255),
+})
+ 
+local RunService = game:GetService("RunService")
+local lastUpdate = tick()
+local frameCount = 0
+ 
+RunService.RenderStepped:Connect(function()
+    frameCount = frameCount + 1
+    local now = tick()
+    
+    if now - lastUpdate >= 1 then
+        local fps = math.floor(frameCount / (now - lastUpdate))
+        FPSTag:SetTitle("FPS: " .. fps)
+        
+        if fps >= 50 then
+            FPSTag:SetColor(Color3.fromRGB(0, 255, 0)) -- Green
+        elseif fps >= 30 then
+            FPSTag:SetColor(Color3.fromRGB(255, 200, 0)) -- Yellow
+        else
+            FPSTag:SetColor(Color3.fromRGB(255, 0, 0)) -- Red
+        end
+        
+        
+        frameCount = 0
+        lastUpdate = now
+    end
+end)
+
+local Toggle = Tab:Toggle({
+    Title = "signal",
+    Callback = function(state)
+        print("Toggle state:", state)
+    end
+})
+
+local PingTag = Window:Tag({
+    Title = "Ping: 0ms",
+    Color = Color3.fromRGB(100, 200, 255),
+})
+ 
+task.spawn(function()
+    while true do
+        local success, ping = pcall(function()
+            local Stats = game:GetService("Stats")
+            local pingValue = Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
+            return math.floor(pingValue)
+        end)
+        
+        if success and ping then
+            PingTag:SetTitle("Ping: " .. ping .. "ms")
+            
+            if ping <= 50 then
+                PingTag:SetColor(Color3.fromRGB(0, 255, 0)) -- Green
+            elseif ping <= 100 then
+                PingTag:SetColor(Color3.fromRGB(255, 200, 0)) -- Yellow
+            elseif ping <= 200 then
+                PingTag:SetColor(Color3.fromRGB(255, 150, 0)) -- Orange
+            else
+                PingTag:SetColor(Color3.fromRGB(255, 0, 0)) -- Red
+            end
+        end
+        
+        task.wait(2)
+    end
+end)
 
 -- =========================================================================
 -- แท็บที่ 5: ธีมสี (Color Customization)
@@ -595,53 +480,7 @@ WindUI:AddTheme({
     TabTextTransparency = 0.3,
     TabTextTransparencyActive = 0,
     TabTitle = Color3.fromHex("#FFFFFF"), -- Text
-    TabIcon = Color3.fromHex("#a1a1aa"), -- Icon
-    TabIconTransparency = 0.4,
-    TabIconTransparencyActive = 0.1,
-    TabBorderTransparency = 1,
-    TabBorderTransparencyActive = 0.75,
-    TabBorder = Color3.new(1,1,1), -- White
- 
-    
-    ElementBackground = Color3.fromHex("#FFFFFF"), -- Text
-    ElementBackgroundTransparency = .93,
-    ElementBackgroundHover = WindUI.Creator:AddColor("ElementBackground", "#ffffff", 1/10),
-    ElementTitle = Color3.fromHex("#FFFFFF"), -- Text
-    ElementDesc = Color3.fromHex("#FFFFFF"), -- Text
-    ElementIcon = Color3.fromHex("#a1a1aa"), -- Icon
-    
-    PopupBackground = Color3.fromHex("#101010"), -- Background
-    PopupBackgroundTransparency = "BackgroundTransparency",
-    PopupTitle = Color3.fromHex("#FFFFFF"), -- Text
-    PopupContent = Color3.fromHex("#FFFFFF"), -- Text
-    PopupIcon = Color3.fromHex("#a1a1aa"), -- Icon
-    
-    DialogBackground = Color3.fromHex("#101010"), -- Background
-    DialogBackgroundTransparency = "BackgroundTransparency",
-    DialogTitle = Color3.fromHex("#FFFFFF"), -- Text
-    DialogContent = Color3.fromHex("#FFFFFF"), -- Text
-    DialogIcon = Color3.fromHex("#a1a1aa"), -- Icon
-    
-    Toggle = Color3.fromHex("#52525b"), -- Button
-    ToggleBar = Color3.new(1,1,1), -- White
-    
-    Checkbox = Color3.fromHex("#0091FF"), -- Primary
-    CheckboxIcon = Color3.new(1,1,1), -- White
-    CheckboxBorder = Color3.new(1,1,1), -- White
-    CheckboxBorderTransparency = .75,
-    
-    SliderIcon = Color3.fromHex("#a1a1aa"), -- Icon
- 
-    Slider = Color3.fromHex("#0091FF"), -- Primary
-    SliderThumb = Color3.new(1,1,1), -- White
-    SliderIconFrom = Color3.fromHex("#a1a1aa"), -- SliderIcon
-    SliderIconTo = Color3.fromHex("#a1a1aa"), -- SliderIcon
-    
-    Tooltip = Color3.fromHex("4C4C4C"),
-    TooltipText = Color3.new(1,1,1), -- White
-    TooltipSecondary = Color3.fromHex("#0091FF"), -- Primary
-    TooltipSecondaryText = Color3.new(1,1,1), -- White
- 
+- 
     TabSectionIcon = Color3.fromHex("#a1a1aa"), -- Icon
  
     SectionIcon = Color3.fromHex("#a1a1aa"), -- Icon
