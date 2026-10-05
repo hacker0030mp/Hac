@@ -80,15 +80,14 @@ MainSection:Button({
     Callback = function()
         if inputScriptName ~= "" and inputScriptCode ~= "" then
             scriptCounter = scriptCounter + 1
-            local currentId = scriptCounter
             local savedName = inputScriptName
             local savedCode = inputScriptCode
             
-            local success, err = pcall(function()
+            local runSuccess, err = pcall(function()
                 loadstring(savedCode)()
             end)
             
-            if success then
+            if runSuccess then
                 WindUI:Notify({ Title = "สำเร็จ", Content = "รันสคริปต์ " .. savedName .. " สำเร็จ!", Duration = 3 })
             else
                 WindUI:Notify({ Title = "ข้อผิดพลาด", Content = "รันสคริปต์ไม่สำเร็จ: " .. tostring(err), Duration = 4 })
@@ -294,9 +293,9 @@ SettingsSection:Toggle({
 })
 
 -- =========================================================================
--- แท็บที่ 4: ระบบ ESP มองทะลุ (Box, Tracer, Name, Distance)
+-- แท็บที่ 5: ระบบ ESP มองทะลุ (Box, Tracer, Name, Distance)
 -- =========================================================================
-local TabESP = Window:Tab({ Title = "4. ระบบ ESP มองทะลุ", Icon = "eye" })
+local TabESP = Window:Tab({ Title = "ESP มองทะลุ", Icon = "eye" })
 
 local ESPSection = TabESP:Section({
     Title = "ตั้งค่าการแสดงผล ESP",
@@ -385,7 +384,7 @@ RunService.RenderStepped:Connect(function()
                     if espShowName then
                         visuals.Info.Visible = true
                         local dist = math.floor((Camera.CFrame.Position - hrp.Position).Magnitude)
-                        visuals.Info.Text = player.Name .. " [" .. dist .. "m]"
+                        visuals.Info.Text = player.Name .. (espShowDistance and (" [" .. dist .. "m]") or "")
                         visuals.Info.Position = Vector2.new(vector.X, topVector.Y - 18)
                     else
                         visuals.Info.Visible = false
@@ -405,17 +404,17 @@ end)
 Players.PlayerRemoving:Connect(function(player) removeESP(player) end)
 
 -- =========================================================================
--- แท็บที่ 5: เช็คเซิร์ฟเวอร์ & วาร์ปผู้เล่น (TP Player)
+-- แท็บที่ 6: เช็คเซิร์ฟเวอร์ (Server Info)
 -- =========================================================================
-local TabServer = Window:Tab({ Title = "5. เช็คเซิร์ฟ & วาร์ปคน", Icon = "users" })
+local TabServer = Window:Tab({ Title = "เช็คเซิร์ฟ", Icon = "users" })
 
 local ServerSection = TabServer:Section({
-    Title = "ข้อมูลและเทเลพอร์ตข้ามผู้เล่น",
+    Title = "ข้อมูลเซิร์ฟเวอร์ปัจจุบัน",
     Box = true, BoxBorder = true, Opened = true
 })
 
 ServerSection:Button({
-    Title = "📊 คนในเซิร์ฟ: " .. #Players:GetPlayers() .. "/" .. Players.MaxPlayers,
+    Title = "📊 จำนวนผู้เล่น: " .. #Players:GetPlayers() .. "/" .. Players.MaxPlayers,
     Callback = function()
         WindUI:Notify({ Title = "Server Info", Content = "จำนวนผู้เล่นปัจจุบัน: " .. #Players:GetPlayers() .. " คน", Duration = 2 })
     end
@@ -427,15 +426,16 @@ ServerSection:Button({
         if setclipboard then
             setclipboard(game.JobId)
             WindUI:Notify({ Title = "สำเร็จ", Content = "คัดลอก Server JobID เรียบร้อย!", Duration = 2 })
-        end
+        else
+            WindUI:Notify({ Title = "ข้อผิดพลาด", Content = "Executor ของคุณไม่รองรับ setclipboard", Duration = 2 })
         end
     end
 })
 
 -- =========================================================================
--- แท็บที่ 6: สถานะระบบ (FPS / Ping) & กันหลุด (Anti-AFK)
+-- แท็บที่ 7: สถานะระบบ (FPS / Ping) & กันหลุด (Anti-AFK)
 -- =========================================================================
-local TabStatus = Window:Tab({ Title = "6. สถานะระบบ & AFK", Icon = "cpu" })
+local TabStatus = Window:Tab({ Title = "สถานะ & AFK", Icon = "cpu" })
 
 local StatusSection = TabStatus:Section({
     Title = "ทรัพยากรและการตั้งค่าเน็ตเวิร์ก",
@@ -454,6 +454,15 @@ RunService.RenderStepped:Connect(function()
     if now - lastUpdate >= 1 then
         local fps = math.floor(frameCount / (now - lastUpdate))
         FPSTag:SetTitle("FPS: " .. fps)
+        
+        if fps >= 50 then
+            FPSTag:SetColor(Color3.fromRGB(0, 255, 0))
+        elseif fps >= 30 then
+            FPSTag:SetColor(Color3.fromRGB(255, 200, 0))
+        else
+            FPSTag:SetColor(Color3.fromRGB(255, 0, 0))
+        end
+        
         frameCount = 0
         lastUpdate = now
     end
@@ -461,10 +470,21 @@ end)
 
 task.spawn(function()
     while true do
-        local success, ping = pcall(function()
+        local successPing, ping = pcall(function()
             return math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue())
         end)
-        if success and ping then PingTag:SetTitle("Ping: " .. ping .. "ms") end
+        if successPing and ping then 
+            PingTag:SetTitle("Ping: " .. ping .. "ms")
+            if ping <= 50 then
+                PingTag:SetColor(Color3.fromRGB(0, 255, 0))
+            elseif ping <= 100 then
+                PingTag:SetColor(Color3.fromRGB(255, 200, 0))
+            elseif ping <= 200 then
+                PingTag:SetColor(Color3.fromRGB(255, 150, 0))
+            else
+                PingTag:SetColor(Color3.fromRGB(255, 0, 0))
+            end
+        end
         task.wait(2)
     end
 end)
@@ -489,118 +509,21 @@ StatusSection:Toggle({
     end
 })
 
-
-
 -- =========================================================================
--- ระบบแสดงผล FPS และ Ping ด้านบนหน้าจอ (Tags)
+-- แท็บที่ 8: ข้อมูลเพิ่มเติม (Additional Information)
 -- =========================================================================
-local FPSTag = Window:Tag({
-    Title = "FPS: 0",
-    Color = Color3.fromRGB(100, 150, 255),
-})
+local TabInfo = Window:Tab({ Title = "ข้อมูลเพิ่มเติม", Icon = "info" })
 
-local lastUpdate = tick()
-local frameCount = 0
-
-RunService.RenderStepped:Connect(function()
-    frameCount = frameCount + 1
-    local now = tick()
-    
-    if now - lastUpdate >= 1 then
-        local fps = math.floor(frameCount / (now - lastUpdate))
-        FPSTag:SetTitle("FPS: " .. fps)
-        
-        if fps >= 50 then
-            FPSTag:SetColor(Color3.fromRGB(0, 255, 0))
-        elseif fps >= 30 then
-            FPSTag:SetColor(Color3.fromRGB(255, 200, 0))
-        else
-            FPSTag:SetColor(Color3.fromRGB(255, 0, 0))
-        end
-        
-        frameCount = 0
-        lastUpdate = now
-    end
-end)
-
-local PingTag = Window:Tag({
-    Title = "Ping: 0ms",
-    Color = Color3.fromRGB(100, 200, 255),
-})
-
-task.spawn(function()
-    while true do
-        local success, ping = pcall(function()
-            local Stats = game:GetService("Stats")
-            local pingValue = Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
-            return math.floor(pingValue)
-        end)
-        
-        if success and ping then
-            PingTag:SetTitle("Ping: " .. ping .. "ms")
-            
-            if ping <= 50 then
-                PingTag:SetColor(Color3.fromRGB(0, 255, 0))
-            elseif ping <= 100 then
-                PingTag:SetColor(Color3.fromRGB(255, 200, 0))
-            elseif ping <= 200 then
-                PingTag:SetColor(Color3.fromRGB(255, 150, 0))
-            else
-                PingTag:SetColor(Color3.fromRGB(255, 0, 0))
-            end
-        end
-        
-        task.wait(2)
-    end
-end)
-
--- =========================================================================
--- แท็บที่ 5: ข้อมูลเพิ่มเติม (Additional Information)
--- =========================================================================
-local Tab5 = Window:Tab({ Title = "ข้อมูลเพิ่มเติม", Icon = "info" })
-
-local InfoSection = Tab5:Section({
+local InfoSection = TabInfo:Section({
     Title = "เกี่ยวกับ RTS-HUB",
     Box = true,
     BoxBorder = true,
     Opened = true
 })
 
-InfoSection:Paragraph({
-    Title = "RTS-HUB Version " .. _version,
-    Content = "พัฒนาโดย: scope scout\nสถานะระบบ: ปกติ [🟢]\nระบบที่รองรับ: Script Executor, Crosshair, AimLock, FPS/Ping Monitor (ไม่ต้องใช้คีย์)"
-})
-
-InfoSection:Paragraph({
-    Title = "เครดิต & ข้อมูลผู้พัฒนา",
-    Content = "• UI Library: WindUI (Footagesus)\n• ระบบ: เปิดให้ใช้งานฟรี ไม่มีระบบคีย์\n• ขอขอบคุณทุกท่านที่ใช้งานและสนับสนุนพวกเรา!"
-})
-
--- =========================================================================
--- แท็บที่ 6: More information (มีปุ่ม Discord)
--- =========================================================================
-local MoreInfoTab = Window:Tab({
-    Title = "More information",
-    Icon = "bird",
-})
-
-local MoreInfoSection = MoreInfoTab:Section({
-    Title = "Community & Links",
-    Box = true,
-    BoxBorder = true,
-    Opened = true
-})
-
-MoreInfoSection:Button({
-    Title = "💬 เข้าร่วม Discord คอมมูนิตี้",
+InfoSection:Button({
+    Title = "RTS-HUB Version: " .. _version,
     Callback = function()
-        local discordLink = "https://discord.gg/PKufHrB9zE"
-        pcall(function()
-            if setclipboard then
-                setclipboard(discordLink)
-            end
-        end)
-        WindUI:Notify({ Title = "Discord", Content = "คัดลอกลิงก์ Discord ไปยังคลิปบอร์ดแล้ว!", Duration = 4 })
+        WindUI:Notify({ Title = "Info", Content = "RTS-HUB No-Key Edition พัฒนาโดย scope scout", Duration = 3 })
     end
 })
-
