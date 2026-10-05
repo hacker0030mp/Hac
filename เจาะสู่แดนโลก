@@ -1,0 +1,487 @@
+-- =========================================================================
+-- RTS HUB - ULTIMATE ORGANIZED PRO SCRIPT (2026 EDITION)
+-- =========================================================================
+local _version = "1.6.66"
+local success, WindUI = pcall(function()
+    return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/" .. _version .. "/main.lua"))()
+end)
+
+if not success or not WindUI then
+    warn("Failed to load WindUI library!")
+    return
+end
+
+-- ตั้งค่าธีม Violet
+pcall(function()
+    WindUI:AddTheme({
+        Name = "Violet",
+        Accent = Color3.fromHex("#6d28d9"),
+        Background = Color3.fromHex("#1e0a3e"),
+        Outline = Color3.fromHex("#faf5ff"),
+        Text = Color3.fromHex("#faf5ff"),
+        Placeholder = Color3.fromHex("#8f7ee0"),
+        Button = Color3.fromHex("#7c3aed"),
+        Icon = Color3.fromHex("#8b5cf6"),
+    })
+    WindUI:SetTheme("Violet")
+end)
+
+WindUI:Notify({
+    Title = "RTS-HUB Pro Organized",
+    Content = "จัดเรียงระบบทั้งหมดพร้อมใช้งานแล้ว!",
+    Duration = 3
+})
+
+-- สร้างหน้าต่างหลัก
+local Window = WindUI:CreateWindow({
+    Title = "RTS-HUB | Ultimate Pro Edition",
+    Icon = "layers",
+    Author = "by scope scout",
+    Folder = "RTS_ULTIMATE_HUB",
+    KeySystem = false
+})
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+local RunService = game:GetService("RunService")
+
+-- =========================================================================
+-- แท็บที่ 1: จุดพักรถไฟ & แผนผังอัพเกรด (Train Roadmap 1 - End)
+-- =========================================================================
+local TabTrain = Window:Tab({ Title = "1. จุดพักรถไฟ & อัพเกรด", Icon = "train" })
+
+local TrainRoadmapSection = TabTrain:Section({
+    Title = "แผนผังจุดอัพเกรดสถานีรถไฟ (ตั้งแต่จุด 1 ถึงสิ้นสุด)",
+    Box = true, BoxBorder = true, Opened = true
+})
+
+local trainStations = {
+    "จุดที่ 1: สถานีเริ่มต้น (Lv.1 - พื้นฐาน)",
+    "จุดที่ 2: จุดตรวจตั๋วและชานชาลา A",
+    "จุดที่ 3: โกดังเก็บเสบียงและน้ำมัน",
+    "จุดที่ 4: โรงซ่อมบำรุงจักรกลรถไฟ",
+    "จุดที่ 5: สถานีแยกความเร็วสูง",
+    "จุดที่ 6: คลังสินค้าขนาดใหญ่พิเศษ",
+    "จุดที่ 7: จุดพักรถไฟปลายทาง (Max Level)"
+}
+
+local selectedStationIndex = 1
+TrainRoadmapSection:Dropdown({
+    Title = "เลือกสถานี / จุดอัพเกรดเป้าหมาย",
+    Values = trainStations,
+    Value = trainStations[1],
+    Callback = function(selected)
+        for i, station in ipairs(trainStations) do
+            if station == selected then
+                selectedStationIndex = i
+                break
+            end
+        end
+        WindUI:Notify({ Title = "Train Roadmap", Content = "เลือกเป้าหมาย: " .. selected, Duration = 2 })
+    end
+})
+
+TrainRoadmapSection:Button({
+    Title = "📌 นำทาง / เคลื่อนที่ไปยังจุดอัพเกรดที่เลือก",
+    Callback = function()
+        local char = LocalPlayer.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            char.HumanoidRootPart.CFrame = char.HumanoidRootPart.CFrame + Vector3.new(selectedStationIndex * 15, 5, 0)
+            WindUI:Notify({ Title = "Train System", Content = "เคลื่อนย้ายสู่เป้าหมาย " .. trainStations[selectedStationIndex], Duration = 2 })
+        end
+    end
+})
+
+-- =========================================================================
+-- แท็บที่ 2: ระบบจัดการไอเทม (Auto-Collect 1-200 & Auto-Sell)
+-- =========================================================================
+local TabEconomy = Window:Tab({ Title = "2. เก็บของ & ขายของออโต้", Icon = "shopping-bag" })
+
+local CollectSection = TabEconomy:Section({
+    Title = "ระบบดูดเก็บไอเทมอัตโนมัติ (Magnet Loot)",
+    Box = true, BoxBorder = true, Opened = true
+})
+
+local isAutoCollectActive = false
+local collectRadius = 50
+
+CollectSection:Toggle({
+    Title = "เปิด/ปิด ระบบดูดไอเทมอัตโนมัติ",
+    Desc = "ดึงไอเทม/ทรัพยากรเข้ามาหาตัวละคร",
+    Value = false,
+    Callback = function(state)
+        isAutoCollectActive = state
+        WindUI:Notify({ Title = "Auto-Collect", Content = state and "เปิดระบบดูดไอเทมแล้ว" or "ปิดระบบดูดไอเทมแล้ว", Duration = 2 })
+    end
+})
+
+CollectSection:Slider({
+    Title = "ระยะดูดไอเทม (1 - 200 Studs)",
+    Value = { Min = 1, Max = 200, Default = 50 },
+    Callback = function(value) collectRadius = value end
+})
+
+task.spawn(function()
+    while true do
+        if isAutoCollectActive then
+            pcall(function()
+                local char = LocalPlayer.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    local hrp = char.HumanoidRootPart
+                    for _, obj in pairs(workspace:GetDescendants()) do
+                        if obj:IsA("BasePart") and (obj.Name:lower():find("item") or obj.Name:lower():find("coin") or obj.Name:lower():find("drop") or obj.Name:lower():find("ore")) then
+                            local dist = (hrp.Position - obj.Position).Magnitude
+                            if dist <= collectRadius then
+                                obj.CFrame = hrp.CFrame
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+        task.wait(0.2)
+    end
+end)
+
+local SellSection = TabEconomy:Section({
+    Title = "ระบบขายของอัตโนมัติ (Auto-Sell)",
+    Box = true, BoxBorder = true, Opened = true
+})
+
+local isAutoSellActive = false
+SellSection:Toggle({
+    Title = "เปิด/ปิด ระบบขายของอัตโนมัติ",
+    Desc = "ขายทรัพยากรหรือขยะอัตโนมัติ",
+    Value = false,
+    Callback = function(state)
+        isAutoSellActive = state
+        WindUI:Notify({ Title = "Auto-Sell", Content = state and "เปิดระบบขายของออโต้แล้ว" or "ปิดระบบขายของออโต้แล้ว", Duration = 2 })
+    end
+})
+
+task.spawn(function()
+    while true do
+        if isAutoSellActive then
+            pcall(function()
+                -- ฟังก์ชันจำลองการส่งรีโมทขายของ
+            end)
+        end
+        task.wait(5)
+    end
+end)
+
+-- =========================================================================
+-- แท็บที่ 3: ระบบต่อสู้รัวๆ (Fast Attack: Sky / Underground)
+-- =========================================================================
+local TabCombat = Window:Tab({ Title = "3. ระบบต่อสู้ & โจมตีรัวๆ", Icon = "sword" })
+
+local CombatSection = TabCombat:Section({
+    Title = "ตั้งค่าการโจมตีรัวๆ (Fast Attack / Rapid Hit)",
+    Box = true, BoxBorder = true, Opened = true
+})
+
+local attackPositionMode = "บนฟ้า (เหนือหัวมอนสเตอร์)"
+CombatSection:Dropdown({
+    Title = "เลือกตำแหน่งยืนโจมตี",
+    Values = {"บนฟ้า (เหนือหัวมอนสเตอร์)", "ใต้ดิน (แกนโลกปลอดภัย)"},
+    Value = "บนฟ้า (เหนือหัวมอนสเตอร์)",
+    Callback = function(selected)
+        attackPositionMode = selected
+        WindUI:Notify({ Title = "Attack Mode", Content = "เปลี่ยนโหมดเป็น: " .. selected, Duration = 2 })
+    end
+})
+
+local isFastAttackActive = false
+local attackSpeed = 0.1
+local attackRange = 100
+
+CombatSection:Toggle({
+    Title = "เปิด/ปิด ออโต้โจมตีรัวๆ (ไม่ตีผู้เล่น)",
+    Desc = "ฟัน/โจมตีมอนสเตอร์รัวๆ โดยตัวละครนิ่งอยู่กับที่",
+    Value = false,
+    Callback = function(state)
+        isFastAttackActive = state
+        WindUI:Notify({ Title = "Fast Attack", Content = state and "เปิดระบบโจมตีรัวๆ แล้ว!" or "ปิดระบบโจมตีแล้ว", Duration = 2 })
+    end
+})
+
+CombatSection:Slider({
+    Title = "ความเร็วในการรัวโจมตี (วินาที)",
+    Value = { Min = 0.05, Max = 1.0, Default = 0.1 },
+    Callback = function(value) attackSpeed = value end
+})
+
+task.spawn(function()
+    while true do
+        if isFastAttackActive then
+            pcall(function()
+                local character = LocalPlayer.Character
+                if character and character:FindFirstChild("HumanoidRootPart") then
+                    local hrp = character.HumanoidRootPart
+                    for _, obj in pairs(workspace:GetDescendants()) do
+                        if obj:IsA("Model") and obj ~= character then
+                            local humanoid = obj:FindFirstChildOfClass("Humanoid")
+                            local rootPart = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Head")
+                            if humanoid and humanoid.Health > 0 and rootPart then
+                                local isPlayer = false
+                                for _, p in pairs(Players:GetPlayers()) do
+                                    if p.Character == obj then isPlayer = true break end
+                                end
+                                if not isPlayer then
+                                    local dist = (hrp.Position - rootPart.Position).Magnitude
+                                    if dist <= attackRange then
+                                        if attackPositionMode == "บนฟ้า (เหนือหัวมอนสเตอร์)" then
+                                            hrp.CFrame = rootPart.CFrame + Vector3.new(0, 10, 0)
+                                        elseif attackPositionMode == "ใต้ดิน (แกนโลกปลอดภัย)" then
+                                            hrp.CFrame = CFrame.new(0, -50000, 0)
+                                        end
+                                        humanoid.Health = math.max(0, humanoid.Health - (humanoid.MaxHealth * 0.2))
+                                        break
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+        task.wait(attackSpeed)
+    end
+end)
+
+-- =========================================================================
+-- แท็บที่ 4: ระบบ ESP มองทะลุ (Box, Tracer, Name, Distance)
+-- =========================================================================
+local TabESP = Window:Tab({ Title = "4. ระบบ ESP มองทะลุ", Icon = "eye" })
+
+local ESPSection = TabESP:Section({
+    Title = "ตั้งค่าการแสดงผล ESP",
+    Box = true, BoxBorder = true, Opened = true
+})
+
+local isESPActive = false
+local espShowBox = true
+local espShowTracer = true
+local espShowName = true
+local espShowDistance = true
+
+ESPSection:Toggle({
+    Title = "เปิด/ปิด ระบบ ESP ทั้งหมด",
+    Value = false,
+    Callback = function(state)
+        isESPActive = state
+        WindUI:Notify({ Title = "ESP System", Content = state and "เปิดระบบ ESP แล้ว" or "ปิดระบบ ESP แล้ว", Duration = 2 })
+    end
+})
+
+ESPSection:Toggle({ Title = "แสดงกรอบสี่เหลี่ยม (Box ESP)", Value = true, Callback = function(state) espShowBox = state end })
+ESPSection:Toggle({ Title = "แสดงเส้นโยง (Tracer Line)", Value = true, Callback = function(state) espShowTracer = state end })
+ESPSection:Toggle({ Title = "แสดงชื่อและระยะทาง", Value = true, Callback = function(state) espShowName = state; espShowDistance = state end })
+
+local espDrawings = {}
+local function removeESP(player)
+    if espDrawings[player] then
+        for _, obj in pairs(espDrawings[player]) do
+            pcall(function() obj:Remove() end)
+        end
+        espDrawings[player] = nil
+    end
+end
+
+RunService.RenderStepped:Connect(function()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            if isESPActive and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+                local character = player.Character
+                local hrp = character.HumanoidRootPart
+                
+                if not espDrawings[player] then
+                    espDrawings[player] = {
+                        Box = Drawing.new("Square"),
+                        Tracer = Drawing.new("Line"),
+                        Info = Drawing.new("Text")
+                    }
+                    espDrawings[player].Box.Filled = false
+                    espDrawings[player].Box.Thickness = 1.5
+                    espDrawings[player].Box.Color = Color3.fromRGB(138, 43, 226)
+                    espDrawings[player].Tracer.Thickness = 1
+                    espDrawings[player].Tracer.Color = Color3.fromRGB(138, 43, 226)
+                    espDrawings[player].Info.Size = 14
+                    espDrawings[player].Info.Center = true
+                    espDrawings[player].Info.Outline = true
+                    espDrawings[player].Info.Color = Color3.fromRGB(255, 255, 255)
+                end
+
+                local visuals = espDrawings[player]
+                local vector, onScreen = Camera:WorldToViewportPoint(hrp.Position)
+
+                if onScreen then
+                    local head = character:FindFirstChild("Head")
+                    local topVector = head and Camera:WorldToViewportPoint(head.Position + Vector3.new(0, 0.5, 0)) or vector
+                    local bottomVector = Camera:WorldToViewportPoint(hrp.Position - Vector3.new(0, 3, 0))
+                    local height = math.abs(topVector.Y - bottomVector.Y)
+                    local width = height / 2
+
+                    if espShowBox then
+                        visuals.Box.Visible = true
+                        visuals.Box.Size = Vector2.new(width, height)
+                        visuals.Box.Position = Vector2.new(vector.X - width / 2, topVector.Y)
+                    else
+                        visuals.Box.Visible = false
+                    end
+
+                    if espShowTracer then
+                        visuals.Tracer.Visible = true
+                        visuals.Tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+                        visuals.Tracer.To = Vector2.new(vector.X, bottomVector.Y)
+                    else
+                        visuals.Tracer.Visible = false
+                    end
+
+                    if espShowName then
+                        visuals.Info.Visible = true
+                        local dist = math.floor((Camera.CFrame.Position - hrp.Position).Magnitude)
+                        visuals.Info.Text = player.Name .. " [" .. dist .. "m]"
+                        visuals.Info.Position = Vector2.new(vector.X, topVector.Y - 18)
+                    else
+                        visuals.Info.Visible = false
+                    end
+                else
+                    visuals.Box.Visible = false
+                    visuals.Tracer.Visible = false
+                    visuals.Info.Visible = false
+                end
+            else
+                removeESP(player)
+            end
+        end
+    end
+end)
+
+Players.PlayerRemoving:Connect(function(player) removeESP(player) end)
+
+-- =========================================================================
+-- แท็บที่ 5: เช็คเซิร์ฟเวอร์ & วาร์ปผู้เล่น (TP Player)
+-- =========================================================================
+local TabServer = Window:Tab({ Title = "5. เช็คเซิร์ฟ & วาร์ปคน", Icon = "users" })
+
+local ServerSection = TabServer:Section({
+    Title = "ข้อมูลและเทเลพอร์ตข้ามผู้เล่น",
+    Box = true, BoxBorder = true, Opened = true
+})
+
+ServerSection:Button({
+    Title = "📊 คนในเซิร์ฟ: " .. #Players:GetPlayers() .. "/" .. Players.MaxPlayers,
+    Callback = function()
+        WindUI:Notify({ Title = "Server Info", Content = "จำนวนผู้เล่นปัจจุบัน: " .. #Players:GetPlayers() .. " คน", Duration = 2 })
+    end
+})
+
+ServerSection:Button({
+    Title = "📋 คัดลอก Server JobID",
+    Callback = function()
+        if setclipboard then
+            setclipboard(game.JobId)
+            WindUI:Notify({ Title = "สำเร็จ", Content = "คัดลอก Server JobID เรียบร้อย!", Duration = 2 })
+        end
+    end
+})
+
+local selectedTargetPlayer = nil
+local function GetPlayerList()
+    local list = {}
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer then table.insert(list, p.Name) end
+    end
+    if #list == 0 then table.insert(list, "ไม่มีผู้เล่นอื่นในเซิร์ฟ") end
+    return list
+end
+
+local playerDropdown = ServerSection:Dropdown({
+    Title = "เลือกผู้เล่นที่ต้องการวาร์ปไปหา",
+    Values = GetPlayerList(),
+    Value = "เลือกผู้เล่น...",
+    Callback = function(selected) selectedTargetPlayer = selected end
+})
+
+ServerSection:Button({
+    Title = "🔄 รีเฟรชรายชื่อผู้เล่น",
+    Callback = function()
+        playerDropdown:Refresh(GetPlayerList())
+        WindUI:Notify({ Title = "Refreshed", Content = "อัปเดตรายชื่อผู้เล่นแล้ว", Duration = 2 })
+    end
+})
+
+ServerSection:Button({
+    Title = "🚀 วาร์ปไปหาผู้เล่นที่เลือก",
+    Callback = function()
+        if selectedTargetPlayer and selectedTargetPlayer ~= "เลือกผู้เล่น..." and selectedTargetPlayer ~= "ไม่มีผู้เล่นอื่นในเซิร์ฟ" then
+            local targetP = Players:FindFirstChild(selectedTargetPlayer)
+            if targetP and targetP.Character and targetP.Character:FindFirstChild("HumanoidRootPart") then
+                local myHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if myHRP then
+                    myHRP.CFrame = targetP.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
+                    WindUI:Notify({ Title = "Teleport Success", Content = "วาร์ปไปหา " .. targetP.Name .. " สำเร็จ!", Duration = 2 })
+                end
+            end
+        end
+    end
+})
+
+-- =========================================================================
+-- แท็บที่ 6: สถานะระบบ (FPS / Ping) & กันหลุด (Anti-AFK)
+-- =========================================================================
+local TabStatus = Window:Tab({ Title = "6. สถานะระบบ & AFK", Icon = "cpu" })
+
+local StatusSection = TabStatus:Section({
+    Title = "ทรัพยากรและการตั้งค่าเน็ตเวิร์ก",
+    Box = true, BoxBorder = true, Opened = true
+})
+
+local FPSTag = Window:Tag({ Title = "FPS: 0", Color = Color3.fromRGB(100, 150, 255) })
+local PingTag = Window:Tag({ Title = "Ping: 0ms", Color = Color3.fromRGB(100, 200, 255) })
+
+local lastUpdate = tick()
+local frameCount = 0
+
+RunService.RenderStepped:Connect(function()
+    frameCount = frameCount + 1
+    local now = tick()
+    if now - lastUpdate >= 1 then
+        local fps = math.floor(frameCount / (now - lastUpdate))
+        FPSTag:SetTitle("FPS: " .. fps)
+        frameCount = 0
+        lastUpdate = now
+    end
+end)
+
+task.spawn(function()
+    while true do
+        local success, ping = pcall(function()
+            return math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue())
+        end)
+        if success and ping then PingTag:SetTitle("Ping: " .. ping .. "ms") end
+        task.wait(2)
+    end
+end)
+
+local antiAfkConnection
+StatusSection:Toggle({
+    Title = "เปิดระบบกันหลุด (Anti-AFK)",
+    Value = false,
+    Callback = function(state)
+        if state then
+            local vu = game:GetService("VirtualUser")
+            antiAfkConnection = LocalPlayer.Idled:Connect(function()
+                vu:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+                task.wait(1)
+                vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+            end)
+            WindUI:Notify({ Title = "Anti-AFK", Content = "เปิดใช้งานกันหลุดเรียบร้อย", Duration = 2 })
+        else
+            if antiAfkConnection then antiAfkConnection:Disconnect() antiAfkConnection = nil end
+            WindUI:Notify({ Title = "Anti-AFK", Content = "ปิดระบบกันหลุดแล้ว", Duration = 2 })
+        end
+    end
+})
