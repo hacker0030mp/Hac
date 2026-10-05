@@ -1,13 +1,6 @@
-WindUI:Notify({
-    Title = "Success",
-    Content = "Operation completed successfully",
-    Icon = "check-circle", -- lucide icon or "rbxassetid://". optional
-    Duration = 3, -- time in seconds. optional
-})
-loadstring(game:HttpGet("https://raw.githubusercontent.com/hacker0030mp/Hac/refs/heads/main/R%20HLKGVUIDS8O%20"))()
 RTS HUB - FULL VERSION 
 
-local _version = "V1"
+local _version = "1.6.66"
 local success, WindUI = pcall(function()
     return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/" .. _version .. "/main.lua"))()
 end)
@@ -16,6 +9,15 @@ if not success or not WindUI then
     warn("Failed to load WindUI library!")
     return
 end
+
+WindUI:Notify({
+    Title = "Hallo to RTS-HUB",
+    Content = "Operation completed successfully",
+    Icon = "check-circle",
+    Duration = 3, --second
+})
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/hacker0030mp/Hac/refs/heads/main/R%20HLKGVUIDS8O%20"))()
 
 -- ตั้งค่าธีม Violet เริ่มต้น
 pcall(function()
