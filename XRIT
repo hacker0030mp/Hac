@@ -213,6 +213,177 @@ SettingsSection:Toggle({
     end
 })
 
+local Toggle = Tab:Toggle({
+    Title = "Enable Feature",
+    Desc = "Toggle description", -- optional
+    Icon = "power", -- lucide icon or "rbxassetid://". optional
+    Value = false, -- initial state. optional
+    Type = "Toggle", -- "Toggle" or "Checkbox". optional
+    Locked = false, -- disable toggle. optional
+    Flag = "my_toggle", -- for config saving. optional
+    Callback = function(state)
+        print("State changed:", state)
+    end
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
+
+local Settings = {
+    Enabled = true,
+    Color = Color3.fromRGB(255, 255, 255), -- สีดำ (ปรับเปลี่ยนได้)
+    Radius = 45,                           -- ขนาดรัศมีวงกลมรอบนอก
+    Size = 12,                             -- ความยาวของเส้นบวก
+    Thickness = 2,                         -- ความหนา
+    RotationSpeed = 3                      -- ความเร็วในการหมุน (เลขมากยิ่งหมุนเร็ว)
+}
+
+-- สร้างเส้นบวก 4 เส้น และวงกลม 1 วง
+local lines = {}
+for i = 1, 4 do
+    local line = Drawing.new("Line")
+    line.Visible = Settings.Enabled
+    line.Color = Settings.Color
+    line.Thickness = Settings.Thickness
+    line.Transparency = 1
+    table.insert(lines, line)
+end
+
+local circle = Drawing.new("Circle")
+circle.Visible = Settings.Enabled
+circle.Color = Settings.Color
+circle.Thickness = 1.5
+circle.NumSides = 32
+circle.Radius = Settings.Radius
+circle.Filled = false
+circle.Transparency = 1
+
+local currentAngle = 0
+
+local connection
+connection = RunService.RenderStepped:Connect(function(dt)
+    if not Settings.Enabled then
+        for _, line in ipairs(lines) do line.Visible = false end
+        circle.Visible = false
+        return
+    end
+
+    local viewportSize = Camera.ViewportSize
+    local center = Vector2.new(viewportSize.X / 2, viewportSize.Y / 2)
+
+    -- อัปเดตวงกลมรอบนอก
+    circle.Visible = true
+    circle.Position = center
+    circle.Radius = Settings.Radius
+    circle.Color = Settings.Color
+
+    -- คำนวณการหมุน (เพิ่มมุมเรื่อยๆ ทุกเฟรม)
+    currentAngle = currentAngle + (Settings.RotationSpeed * dt)
+
+    -- คำนวณตำแหน่งเส้นบวก 4 ทิศทางแบบหมุนได้
+    for i = 1, 4 do
+        local line = lines[i]
+        line.Visible = true
+        line.Color = Settings.Color
+        line.Thickness = Settings.Thickness
+
+        -- มุมของแต่ละแขน (ห่างกัน 90 องศา หรือ รอบละ pi/2)
+        local angle = currentAngle + ((i - 1) * (math.pi / 2))
+        
+        -- จุดเริ่มต้น (ใกล้กลาง) และจุดสิ้นสุด (ยื่นออกไปตามความยาว Size)
+        local innerDist = 4 -- ระยะห่างจากจุดศูนย์กลางเล็กน้อย
+        local outerDist = innerDist + Settings.Size
+
+        local p1 = Vector2.new(center.X + math.cos(angle) * innerDist, center.Y + math.sin(angle) * innerDist)
+        local p2 = Vector2.new(center.X + math.cos(angle) * outerDist, center.Y + math.sin(angle) * outerDist)
+
+        line.From = p1
+        line.To = p2
+    end
+end)
+
+SettingsSection:Toggle({
+    Title = "เปิด/ปิด ล็อคเป้าผู้เล่นใกล้สุด",
+    Desc = "หันเป้าตามผู้เล่นที่ใกล้ที่สุดในระยะการมองเห็นอัตโนมัติ",
+    Value = false,
+    Callback = function(state)
+        AimSettings.Enabled = state
+        WindUI:Notify({ Title = "AimLock", Content = state and "เปิดระบบล็อคเป้าแล้ว" or "ปิดระบบล็อคเป้าแล้ว", Duration = 2 })
+    end
+})
+
+-- =========================================================================
+-- SYSTEM: AIMLOCK / TARGET NEAREST PLAYER IN FOV
+-- =========================================================================
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+local RunService = game:GetService("RunService")
+
+local AimSettings = {
+    Enabled = false,       -- เปิด/ปิด ระบบเล็งเป้าใกล้สุด
+    FOV = 150,             -- รัศมีวงกลมการมองเห็น (Field of View) สำหรับล็อคเป้า
+    TeamCheck = true       -- เช็คทีม (ไม่ล็อคคนทีมเดียวกัน ถ้าเกมมีระบบทีม)
+}
+
+-- ฟังก์ชันหาผู้เล่นที่ใกล้ที่สุดและอยู่ในระยะการมองเห็น
+local function getClosestPlayerInFOV()
+    local closestPlayer = nil
+    local shortestDistance = AimSettings.FOV
+
+    local viewportCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid and humanoid.Health > 0 then
+                -- เช็คทีม (ถ้ามีระบบ Team)
+                local isSameTeam = false
+                if AimSettings.TeamCheck and player.Team and LocalPlayer.Team and player.Team == LocalPlayer.Team then
+                    isSameTeam = true
+                end
+
+                if not isSameTeam then
+                    local hrp = player.Character.HumanoidRootPart
+                    local screenPos, onScreen = Camera:WorldToViewportPoint(hrp.Position)
+
+                    if onScreen then
+                        local screenCoord = Vector2.new(screenPos.X, screenPos.Y)
+                        local distance = (screenCoord - viewportCenter).Magnitude
+
+                        if distance < shortestDistance then
+                            shortestDistance = distance
+                            closestPlayer = player.Character.HumanoidRootPart
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    return closestPlayer
+end
+
+-- ลูปการทำงานเพื่อให้กล้องหันไปหาเป้าหมายอัตโนมัติเมื่อเปิดใช้งาน
+RunService.RenderStepped:Connect(function()
+    if not AimSettings.Enabled then return end
+
+    local targetPart = getClosestPlayerInFOV()
+    if targetPart then
+        -- ให้กล้องหันไปที่เป้าหมาย (ผู้เล่นที่ใกล้ที่สุดในระยะมองเห็น)
+        Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetPart.Position)
+    end
+end)
+
+
+-- หากต้องการปิดการใช้งานให้รันคำสั่งเหล่านี้:
+-- connection:Disconnect()
+-- for _, line in ipairs(lines) do line:Remove() end
+-- circle:Remove()
+
+
+})
+
+
+
 -- =========================================================================
 -- แท็บที่ 5: ธีมสี (Color Customization)
 -- =========================================================================
