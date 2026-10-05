@@ -79,7 +79,8 @@ local RunService = game:GetService("RunService")
 Tab:Button({
     Title = "Jing",
     Callback = function()
-        print("")
+        print("https://raw.githubusercontent.com/hacker0030mp/Hac/refs/heads/main/RTS%20Hub%20v3")
     end
-})
 loadstring(game:HttpGet("https://raw.githubusercontent.com/hacker0030mp/Hac/refs/heads/main/RTS%20Hub%20v3"))()
+})
+
