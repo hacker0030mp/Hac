@@ -293,40 +293,6 @@ SettingsSection:Toggle({
     end
 })
 
--- =========================================================================
--- แท็บที่ 5: ข้อมูลเพิ่มเติม (Additional Information)
--- =========================================================================
-local Tab5 = Window:Tab({ Title = "ข้อมูลเพิ่มเติม", Icon = "info" })
-
-local InfoSection = Tab5:Section({
-    Title = "เกี่ยวกับ RTS-HUB",
-    Box = true,
-    BoxBorder = true,
-    Opened = true
-})
-
-InfoSection:Paragraph({
-    Title = "RTS-HUB Version " .. _version,
-    Content = "พัฒนาโดย: scope scout\nสถานะระบบ: ปกติ [🟢]\nระบบที่รองรับ: Script Executor, Crosshair, AimLock, FPS/Ping Monitor (ไม่ต้องใช้คีย์)"
-})
-
-InfoSection:Paragraph({
-    Title = "เครดิต & ข้อมูลผู้พัฒนา",
-    Content = "• UI Library: WindUI (Footagesus)\n• ระบบ: เปิดให้ใช้งานฟรี ไม่มีระบบคีย์\n• ขอขอบคุณทุกท่านที่ใช้งานและสนับสนุนพวกเรา!"
-})
-
-InfoSection:Button({
-    Title = "💬 เข้าร่วม Discord คอมมูนิตี้",
-    Callback = function()
-        local discordLink = "https://discord.gg/PKufHrB9zE"
-        pcall(function()
-            if setclipboard then
-                setclipboard(discordLink)
-            end
-        end)
-        WindUI:Notify({ Title = "Discord", Content = "คัดลอกลิงก์ Discord ไปยังคลิปบอร์ดแล้ว!", Duration = 4 })
-    end
-})
 
 -- =========================================================================
 -- ระบบแสดงผล FPS และ Ping ด้านบนหน้าจอ (Tags)
@@ -391,11 +357,44 @@ task.spawn(function()
     end
 end)
 
-local Tab = Window:Tab({
-    Title = "More information ",
-    Icon = "bird", -- optional
+-- =========================================================================
+-- แท็บที่ 5: ข้อมูลเพิ่มเติม (Additional Information)
+-- =========================================================================
+local Tab5 = Window:Tab({ Title = "ข้อมูลเพิ่มเติม", Icon = "info" })
+
+local InfoSection = Tab5:Section({
+    Title = "เกี่ยวกับ RTS-HUB",
+    Box = true,
+    BoxBorder = true,
+    Opened = true
 })
-MainSection:Button({
+
+InfoSection:Paragraph({
+    Title = "RTS-HUB Version " .. _version,
+    Content = "พัฒนาโดย: scope scout\nสถานะระบบ: ปกติ [🟢]\nระบบที่รองรับ: Script Executor, Crosshair, AimLock, FPS/Ping Monitor (ไม่ต้องใช้คีย์)"
+})
+
+InfoSection:Paragraph({
+    Title = "เครดิต & ข้อมูลผู้พัฒนา",
+    Content = "• UI Library: WindUI (Footagesus)\n• ระบบ: เปิดให้ใช้งานฟรี ไม่มีระบบคีย์\n• ขอขอบคุณทุกท่านที่ใช้งานและสนับสนุนพวกเรา!"
+})
+
+-- =========================================================================
+-- แท็บที่ 6: More information (มีปุ่ม Discord)
+-- =========================================================================
+local MoreInfoTab = Window:Tab({
+    Title = "More information",
+    Icon = "bird",
+})
+
+local MoreInfoSection = MoreInfoTab:Section({
+    Title = "Community & Links",
+    Box = true,
+    BoxBorder = true,
+    Opened = true
+})
+
+MoreInfoSection:Button({
     Title = "💬 เข้าร่วม Discord คอมมูนิตี้",
     Callback = function()
         local discordLink = "https://discord.gg/PKufHrB9zE"
@@ -407,3 +406,4 @@ MainSection:Button({
         WindUI:Notify({ Title = "Discord", Content = "คัดลอกลิงก์ Discord ไปยังคลิปบอร์ดแล้ว!", Duration = 4 })
     end
 })
+
