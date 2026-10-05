@@ -1,5 +1,5 @@
 -- =========================================================================
--- RTS HUB - FULL VERSION (ฉบับรวมเป้าหมุน + ล็อคเป้า + แก้ไขบั๊กสมบูรณ์)
+-- RTS HUB - NO KEY EDITION (เข้าใช้งานได้ทันที ไม่ต้องใช้คีย์)
 -- =========================================================================
 local _version = "1.6.66"
 local success, WindUI = pcall(function()
@@ -11,7 +11,7 @@ if not success or not WindUI then
     return
 end
 
--- ตั้งค่าธีม Violet เริ่มต้น
+-- ตั้งค่าธีม Violet และปรับแต่งธีมแบบละเอียด
 pcall(function()
     WindUI:AddTheme({
         Name = "Violet",
@@ -28,35 +28,16 @@ end)
 
 WindUI:Notify({
     Title = "Welcome to the camp! RTS-HUB",
-    Content = "Operation completed successfully",
+    Content = "เข้าสู่ระบบสำเร็จ (ไม่ต้องใช้คีย์)",
     Duration = 3
 })
 
--- สร้างหน้าต่างหลัก
+-- สร้างหน้าต่างหลัก (เอา KeySystem ออกแล้ว)
 local Window = WindUI:CreateWindow({
     Title = "RTS-HUB",
     Icon = "door-open",
     Author = "by scope scout",
-    Folder = "RTS_KEY_SYSTEM", 
-    KeySystem = {
-        Title = "RTS-HUB.github.io",
-        Note = "Join our Discord to get your key!",
-        URL = "https://discord.gg/PKufHrB9zE", 
-        SaveKey = true,
-        KeyValidator = function(key)
-            return table.find(VALID_KEYS, key) ~= nil
-        end,
-        Thumbnail = {
-            Image = "rbxassetid://1234567890",
-            Title = "Premium Member",
-        }
-    }
-})
-
-WindUI:Notify({
-    Title = "Success",
-    Content = "Successfully logged into RTS-HUB!",
-    Duration = 3
+    Folder = "RTS_NO_KEY"
 })
 
 -- ตัวแปรระบบเก็บข้อมูล
@@ -93,18 +74,6 @@ MainSection:Input({
     end
 })
 
--- =========================================================================
--- แท็บที่ 2: บันทึกสคริปต์
--- =========================================================================
-local Tab2 = Window:Tab({ Title = "บันทึกสคริปต์", Icon = "bookmark" })
-local SavedSection = Tab2:Section({ Title = "สคริปต์ที่บันทึกไว้", Box = true, BoxBorder = true, Opened = true })
-
--- =========================================================================
--- แท็บที่ 3: ประวัติการใช้งาน
--- =========================================================================
-local Tab3 = Window:Tab({ Title = "ประวัติการใช้งาน", Icon = "clock" })
-local HistorySection = Tab3:Section({ Title = "ประวัติทั้งหมด", Box = true, BoxBorder = true, Opened = true })
-
 -- ปุ่มใช้งานหลัก (สีเขียว)
 MainSection:Button({
     Title = "🟢 ใช้งานสคริปต์",
@@ -121,27 +90,6 @@ MainSection:Button({
             
             if success then
                 WindUI:Notify({ Title = "สำเร็จ", Content = "รันสคริปต์ " .. savedName .. " สำเร็จ!", Duration = 3 })
-                
-                SavedSection:Button({
-                    Title = "Save script " .. savedName .. " #" .. currentId,
-                    Callback = function()
-                        pcall(function() loadstring(savedCode)() end)
-                        WindUI:Notify({ Title = "โหลดสคริปต์", Content = "กำลังรัน: " .. savedName .. " (#" .. currentId .. ")", Duration = 2 })
-                    end
-                })
-                 Tab:Button({ Title = "Save" })
-                 Tab:Button({ Title = "Cancel" })
- 
-                 Tab:Space({ Columns = 2 })
- 
-                 Tab:Button({ Title = "Delete" })
-
-                
-                local currentTime = os.date("%H:%M:%S - %d/%m/%Y")
-                HistorySection:Paragraph({
-                    Title = "[#" .. currentId .. "] " .. savedName .." (".. currentTime ..")",
-                    Content = "สถานะ: สำเร็จ [🟢]\nโค้ด:\n" .. savedCode
-                })
             else
                 WindUI:Notify({ Title = "ข้อผิดพลาด", Content = "รันสคริปต์ไม่สำเร็จ: " .. tostring(err), Duration = 4 })
             end
@@ -160,6 +108,18 @@ MainSection:Button({
         WindUI:Notify({ Title = "ล้างข้อมูล", Content = "ล้างช่องกรอกข้อมูลเรียบร้อยแล้ว", Duration = 2 })
     end
 })
+
+-- =========================================================================
+-- แท็บที่ 2: บันทึกสคริปต์
+-- =========================================================================
+local Tab2 = Window:Tab({ Title = "บันทึกสคริปต์", Icon = "bookmark" })
+local SavedSection = Tab2:Section({ Title = "สคริปต์ที่บันทึกไว้", Box = true, BoxBorder = true, Opened = true })
+
+-- =========================================================================
+-- แท็บที่ 3: ประวัติการใช้งาน
+-- =========================================================================
+local Tab3 = Window:Tab({ Title = "ประวัติการใช้งาน", Icon = "clock" })
+local HistorySection = Tab3:Section({ Title = "ประวัติทั้งหมด", Box = true, BoxBorder = true, Opened = true })
 
 -- =========================================================================
 -- แท็บที่ 4: การตั้งค่าทั่วไป (รวมเป้าหมุน + ล็อคเป้า + ระบบ UI)
@@ -334,6 +294,41 @@ SettingsSection:Toggle({
 })
 
 -- =========================================================================
+-- แท็บที่ 5: ข้อมูลเพิ่มเติม (Additional Information)
+-- =========================================================================
+local Tab5 = Window:Tab({ Title = "ข้อมูลเพิ่มเติม", Icon = "info" })
+
+local InfoSection = Tab5:Section({
+    Title = "เกี่ยวกับ RTS-HUB",
+    Box = true,
+    BoxBorder = true,
+    Opened = true
+})
+
+InfoSection:Paragraph({
+    Title = "RTS-HUB Version " .. _version,
+    Content = "พัฒนาโดย: scope scout\nสถานะระบบ: ปกติ [🟢]\nระบบที่รองรับ: Script Executor, Crosshair, AimLock, FPS/Ping Monitor (ไม่ต้องใช้คีย์)"
+})
+
+InfoSection:Paragraph({
+    Title = "เครดิต & ข้อมูลผู้พัฒนา",
+    Content = "• UI Library: WindUI (Footagesus)\n• ระบบ: เปิดให้ใช้งานฟรี ไม่มีระบบคีย์\n• ขอขอบคุณทุกท่านที่ใช้งานและสนับสนุนพวกเรา!"
+})
+
+InfoSection:Button({
+    Title = "💬 เข้าร่วม Discord คอมมูนิตี้",
+    Callback = function()
+        local discordLink = "https://discord.gg/PKufHrB9zE"
+        pcall(function()
+            if setclipboard then
+                setclipboard(discordLink)
+            end
+        end)
+        WindUI:Notify({ Title = "Discord", Content = "คัดลอกลิงก์ Discord ไปยังคลิปบอร์ดแล้ว!", Duration = 4 })
+    end
+})
+
+-- =========================================================================
 -- ระบบแสดงผล FPS และ Ping ด้านบนหน้าจอ (Tags)
 -- =========================================================================
 local FPSTag = Window:Tag({
@@ -396,279 +391,19 @@ task.spawn(function()
     end
 end)
 
-local Colorpicker = Tab:Colorpicker({
-    Title = "Select Color",
-    Desc = "Pick a color", -- optional
-    Default = Color3.fromRGB(255, 100, 100), -- default color. optional
-    Locked = false, -- disable colorpicker. optional
-    Flag = "custom_color", -- for config saving. optional
-    Callback = function(color)
-        print("Selected color:", color)
-    end
+local Tab = Window:Tab({
+    Title = "More information ",
+    Icon = "bird", -- optional
 })
-
-WindUI:AddTheme({
-    -- More soon!
-    
-    Primary = Color3.fromHex("#a1a1aa"), -- Icon
-    
-    White = Color3.new(1,1,1),
-    Black = Color3.new(0,0,0),
-    
-    Dialog = Color3.fromHex("#18181b"), -- Accent
-    
-    Background = Color3.fromHex("#101010"), -- Accent
-    BackgroundTransparency = 0,
-    Hover = Color3.fromHex("#FFFFFF"), -- Text
- 
-    PanelBackground = Color3.new(1,1,1), -- White
-    PanelBackgroundTransparency = .95,
-    
-    WindowBackground = Color3.fromHex("#101010"), -- Background
-    
-    WindowShadow = Color3.new(0,0,0), -- Black
-    --WindowShadowTransparency = .7,
-    
-    WindowTopbarTitle = Color3.fromHex("#FFFFFF"), -- Text
-    WindowTopbarAuthor = Color3.fromHex("#FFFFFF"), -- Text
-    WindowTopbarIcon = Color3.fromHex("#a1a1aa"), -- Icon
-    WindowTopbarButtonIcon = Color3.fromHex("#a1a1aa"), -- Icon
-    
-    WindowSearchBarBackground = Color3.fromHex("#101010"), -- Background
-    
-    TabBackground = Color3.fromHex("#FFFFFF"), -- Hover
-    TabBackgroundHover = Color3.fromHex("#FFFFFF"), -- Hover
-    TabBackgroundHoverTransparency = .97,
-    TabBackgroundActive = Color3.fromHex("#FFFFFF"), -- Hover
-    TabBackgroundActiveTransparency = 0.93,
-    TabText = Color3.fromHex("#FFFFFF"), -- Text
-    TabTextTransparency = 0.3,
-    TabTextTransparencyActive = 0,
-    TabTitle = Color3.fromHex("#FFFFFF"), -- Text
-    TabIcon = Color3.fromHex("#a1a1aa"), -- Icon
-    TabIconTransparency = 0.4,
-    TabIconTransparencyActive = 0.1,
-    TabBorderTransparency = 1,
-    TabBorderTransparencyActive = 0.75,
-    TabBorder = Color3.new(1,1,1), -- White
- 
-    
-    ElementBackground = Color3.fromHex("#FFFFFF"), -- Text
-    ElementBackgroundTransparency = .93,
-    ElementBackgroundHover = WindUI.Creator:AddColor("ElementBackground", "#ffffff", 1/10),
-    ElementTitle = Color3.fromHex("#FFFFFF"), -- Text
-    ElementDesc = Color3.fromHex("#FFFFFF"), -- Text
-    ElementIcon = Color3.fromHex("#a1a1aa"), -- Icon
-    
-    PopupBackground = Color3.fromHex("#101010"), -- Background
-    PopupBackgroundTransparency = "BackgroundTransparency",
-    PopupTitle = Color3.fromHex("#FFFFFF"), -- Text
-    PopupContent = Color3.fromHex("#FFFFFF"), -- Text
-    PopupIcon = Color3.fromHex("#a1a1aa"), -- Icon
-    
-    DialogBackground = Color3.fromHex("#101010"), -- Background
-    DialogBackgroundTransparency = "BackgroundTransparency",
-    DialogTitle = Color3.fromHex("#FFFFFF"), -- Text
-    DialogContent = Color3.fromHex("#FFFFFF"), -- Text
-    DialogIcon = Color3.fromHex("#a1a1aa"), -- Icon
-    
-    Toggle = Color3.fromHex("#52525b"), -- Button
-    ToggleBar = Color3.new(1,1,1), -- White
-    
-    Checkbox = Color3.fromHex("#0091FF"), -- Primary
-    CheckboxIcon = Color3.new(1,1,1), -- White
-    CheckboxBorder = Color3.new(1,1,1), -- White
-    CheckboxBorderTransparency = .75,
-    
-    SliderIcon = Color3.fromHex("#a1a1aa"), -- Icon
- 
-    Slider = Color3.fromHex("#0091FF"), -- Primary
-    SliderThumb = Color3.new(1,1,1), -- White
-    SliderIconFrom = Color3.fromHex("#a1a1aa"), -- SliderIcon
-    SliderIconTo = Color3.fromHex("#a1a1aa"), -- SliderIcon
-    
-    Tooltip = Color3.fromHex("4C4C4C"),
-    TooltipText = Color3.new(1,1,1), -- White
-    TooltipSecondary = Color3.fromHex("#0091FF"), -- Primary
-    TooltipSecondaryText = Color3.new(1,1,1), -- White
- 
-    TabSectionIcon = Color3.fromHex("#a1a1aa"), -- Icon
- 
-    SectionIcon = Color3.fromHex("#a1a1aa"), -- Icon
-    
-    SectionExpandIcon = Color3.new(1,1,1), -- White
-    SectionExpandIconTransparency = .4,
-    SectionBox = Color3.new(1,1,1), -- White
-    SectionBoxTransparency = .95,
-    SectionBoxBorder = Color3.new(1,1,1), -- White
-    SectionBoxBorderTransparency = .75,
-    SectionBoxBackground = Color3.new(1,1,1), -- White
-    SectionBoxBackgroundTransparency = .95,
-    
-    SearchBarBorder = Color3.new(1,1,1), -- White
-    SearchBarBorderTransparency = .75,
-    
-    Notification = Color3.fromHex("#101010"), -- Background
-    NotificationTitle = Color3.fromHex("#FFFFFF"), -- Text
-    NotificationTitleTransparency = 0,
-    NotificationContent = Color3.fromHex("#FFFFFF"), -- Text
-    NotificationContentTransparency = .4,
-    NotificationDuration = Color3.new(1,1,1), -- White
-    NotificationDurationTransparency = .95,
-    NotificationBorder = Color3.new(1,1,1), -- White
-    NotificationBorderTransparency = .75,
-    
-    DropdownTabBorder = Color3.new(1,1,1), -- White
- 
-    LabelBackground = Color3.new(1,1,1), -- White
-    LabelBackgroundTransparency = .95,
-})
-
-local Slider = Tab:Slider({
-    Title = "color ",
-    Value = {
-        Min = 0,
-        Max = 100,
-        Default = 50
-    },
-    Callback = function(value)
-        print("WindUI:AddTheme({
-    -- More soon!
-    
-    Primary = Color3.fromHex("#a1a1aa"), -- Icon
-    
-    White = Color3.new(1,1,1),
-    Black = Color3.new(0,0,0),
-    
-    Dialog = Color3.fromHex("#18181b"), -- Accent
-    
-    Background = Color3.fromHex("#101010"), -- Accent
-    BackgroundTransparency = 0,
-    Hover = Color3.fromHex("#FFFFFF"), -- Text
- 
-    PanelBackground = Color3.new(1,1,1), -- White
-    PanelBackgroundTransparency = .95,
-    
-    WindowBackground = Color3.fromHex("#101010"), -- Background
-    
-    WindowShadow = Color3.new(0,0,0), -- Black
-    --WindowShadowTransparency = .7,
-    
-    WindowTopbarTitle = Color3.fromHex("#FFFFFF"), -- Text
-    WindowTopbarAuthor = Color3.fromHex("#FFFFFF"), -- Text
-    WindowTopbarIcon = Color3.fromHex("#a1a1aa"), -- Icon
-    WindowTopbarButtonIcon = Color3.fromHex("#a1a1aa"), -- Icon
-    
-    WindowSearchBarBackground = Color3.fromHex("#101010"), -- Background
-    
-    TabBackground = Color3.fromHex("#FFFFFF"), -- Hover
-    TabBackgroundHover = Color3.fromHex("#FFFFFF"), -- Hover
-    TabBackgroundHoverTransparency = .97,
-    TabBackgroundActive = Color3.fromHex("#FFFFFF"), -- Hover
-    TabBackgroundActiveTransparency = 0.93,
-    TabText = Color3.fromHex("#FFFFFF"), -- Text
-    TabTextTransparency = 0.3,
-    TabTextTransparencyActive = 0,
-    TabTitle = Color3.fromHex("#FFFFFF"), -- Text
-    TabIcon = Color3.fromHex("#a1a1aa"), -- Icon
-    TabIconTransparency = 0.4,
-    TabIconTransparencyActive = 0.1,
-    TabBorderTransparency = 1,
-    TabBorderTransparencyActive = 0.75,
-    TabBorder = Color3.new(1,1,1), -- White
- 
-    
-    ElementBackground = Color3.fromHex("#FFFFFF"), -- Text
-    ElementBackgroundTransparency = .93,
-    ElementBackgroundHover = WindUI.Creator:AddColor("ElementBackground", "#ffffff", 1/10),
-    ElementTitle = Color3.fromHex("#FFFFFF"), -- Text
-    ElementDesc = Color3.fromHex("#FFFFFF"), -- Text
-    ElementIcon = Color3.fromHex("#a1a1aa"), -- Icon
-    
-    PopupBackground = Color3.fromHex("#101010"), -- Background
-    PopupBackgroundTransparency = "BackgroundTransparency",
-    PopupTitle = Color3.fromHex("#FFFFFF"), -- Text
-    PopupContent = Color3.fromHex("#FFFFFF"), -- Text
-    PopupIcon = Color3.fromHex("#a1a1aa"), -- Icon
-    
-    DialogBackground = Color3.fromHex("#101010"), -- Background
-    DialogBackgroundTransparency = "BackgroundTransparency",
-    DialogTitle = Color3.fromHex("#FFFFFF"), -- Text
-    DialogContent = Color3.fromHex("#FFFFFF"), -- Text
-    DialogIcon = Color3.fromHex("#a1a1aa"), -- Icon
-    
-    Toggle = Color3.fromHex("#52525b"), -- Button
-    ToggleBar = Color3.new(1,1,1), -- White
-    
-    Checkbox = Color3.fromHex("#0091FF"), -- Primary
-    CheckboxIcon = Color3.new(1,1,1), -- White
-    CheckboxBorder = Color3.new(1,1,1), -- White
-    CheckboxBorderTransparency = .75,
-    
-    SliderIcon = Color3.fromHex("#a1a1aa"), -- Icon
- 
-    Slider = Color3.fromHex("#0091FF"), -- Primary
-    SliderThumb = Color3.new(1,1,1), -- White
-    SliderIconFrom = Color3.fromHex("#a1a1aa"), -- SliderIcon
-    SliderIconTo = Color3.fromHex("#a1a1aa"), -- SliderIcon
-    
-    Tooltip = Color3.fromHex("4C4C4C"),
-    TooltipText = Color3.new(1,1,1), -- White
-    TooltipSecondary = Color3.fromHex("#0091FF"), -- Primary
-    TooltipSecondaryText = Color3.new(1,1,1), -- White
- 
-    TabSectionIcon = Color3.fromHex("#a1a1aa"), -- Icon
- 
-    SectionIcon = Color3.fromHex("#a1a1aa"), -- Icon
-    
-    SectionExpandIcon = Color3.new(1,1,1), -- White
-    SectionExpandIconTransparency = .4,
-    SectionBox = Color3.new(1,1,1), -- White
-    SectionBoxTransparency = .95,
-    SectionBoxBorder = Color3.new(1,1,1), -- White
-    SectionBoxBorderTransparency = .75,
-    SectionBoxBackground = Color3.new(1,1,1), -- White
-    SectionBoxBackgroundTransparency = .95,
-    
-    SearchBarBorder = Color3.new(1,1,1), -- White
-    SearchBarBorderTransparency = .75,
-    
-    Notification = Color3.fromHex("#101010"), -- Background
-    NotificationTitle = Color3.fromHex("#FFFFFF"), -- Text
-    NotificationTitleTransparency = 0,
-    NotificationContent = Color3.fromHex("#FFFFFF"), -- Text
-    NotificationContentTransparency = .4,
-    NotificationDuration = Color3.new(1,1,1), -- White
-    NotificationDurationTransparency = .95,
-    NotificationBorder = Color3.new(1,1,1), -- White
-    NotificationBorderTransparency = .75,
-    
-    DropdownTabBorder = Color3.new(1,1,1), -- White
- 
-    LabelBackground = Color3.new(1,1,1), -- White
-    LabelBackgroundTransparency = .95,
-}):", value)
-    end
-})
-
--- =========================================================================
--- แท็บที่ 5: ข้อมูลเพิ่มเติม
--- =========================================================================
-local Tab5 = Window:Tab({ Title = "ข้อมูล", Icon = "info" })
-
-local InfoSection = Tab5:Section({
-    Title = "ช่องทางติดต่อและสนับสนุน",
-    Box = true,
-    BoxBorder = true,
-    Opened = true
-})
-
-InfoSection:Button({
-    Title = "ดิสคอร์ด",
+MainSection:Button({
+    Title = "💬 เข้าร่วม Discord คอมมูนิตี้",
     Callback = function()
-        if setclipboard then
-            setclipboard("https://discord.gg/PKufHrB9zE")
-            WindUI:Notify({ Title = "สำเร็จ", Content = "คัดลอกลิงก์ Discord แล้ว!", Duration = 3 })
-        end
+        local discordLink = "https://discord.gg/PKufHrB9zE"
+        pcall(function()
+            if setclipboard then
+                setclipboard(discordLink)
+            end
+        end)
+        WindUI:Notify({ Title = "Discord", Content = "คัดลอกลิงก์ Discord ไปยังคลิปบอร์ดแล้ว!", Duration = 4 })
     end
 })
