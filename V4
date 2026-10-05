@@ -1,0 +1,85 @@
+-- =========================================================================
+-- RTS HUB v3 - ULTIMATE COMPLETE EDITION (100 KEYS + ALL MODULES)
+-- =========================================================================
+local _version = "1.6.66"
+local success, WindUI = pcall(function()
+    return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/" .. _version .. "/main.lua"))()
+end)
+
+if not success or not WindUI then
+    warn("Failed to load WindUI library!")
+    return
+end
+
+-- ตั้งค่าธีม Violet
+pcall(function()
+    WindUI:AddTheme({
+        Name = "Violet",
+        Accent = Color3.fromHex("#6d28d9"),
+        Background = Color3.fromHex("#1e0a3e"),
+        Outline = Color3.fromHex("#faf5ff"),
+        Text = Color3.fromHex("#faf5ff"),
+        Placeholder = Color3.fromHex("#8f7ee0"),
+        Button = Color3.fromHex("#7c3aed"),
+        Icon = Color3.fromHex("#8b5cf6"),
+    })
+    WindUI:SetTheme("Violet")
+end)
+
+-- สร้างหน้าต่างหลัก พร้อมระบบ Key 100 ชุดของคุณ
+local Window = WindUI:CreateWindow({
+    Title = "RTS-HUB v3 | Ultimate Pro Edition",
+    Icon = "layers",
+    Author = "by scope scout",
+    Folder = "RTS_ULTIMATE_HUB",
+    KeySystem = true,
+    KeySettings = {
+        Title = "RTS-HUB v3 Key System",
+        Subtitle = "กรุณากรอกคีย์เพื่อเข้าใช้งานฮับ",
+        Note = "ระบบตรวจสอบคีย์อัตโนมัติ (รองรับ 100 คีย์)",
+        FileName = "RTS_Hub_v3_Key_100",
+        SaveKey = true,
+        GrabKeyFromSite = false,
+        Key = {
+            "STR.KEY-8F2A9C4M-1E6T", "STR.KEY-3K7X2P9V-5H4R", "STR.KEY-9B1D6F8J-2W7Z", "STR.KEY-4L5T8Y3N-6Q2K", "STR.KEY-7M3H9C2X-1V8P",
+            "STR.KEY-2F6R4B9D-5J1T", "STR.KEY-5N8K1W7H-3X9M", "STR.KEY-1P4V8Z2L-7C6Q", "STR.KEY-6X9T3J5F-4N2B", "STR.KEY-9R2C7D1K-8H5W",
+            "STR.KEY-3V8F4M6P-2T1L", "STR.KEY-7H1X5N9R-3J4Z", "STR.KEY-4B6W2T8C-9K5F", "STR.KEY-8J2P7Q1V-6M3H", "STR.KEY-5C9L4X3B-1R7N",
+            "STR.KEY-1T6K8M2D-7W9P", "STR.KEY-2Z4H7F5N-8V1X", "STR.KEY-9Q3W1J6L-4C2T", "STR.KEY-6F8P2R9K-5H7M", "STR.KEY-3N5T4X1V-2B6Z",
+            "STR.KEY-7R1C9H8Q-4J3F", "STR.KEY-4M6V2W3N-9L1P", "STR.KEY-8X3K5P7T-1F6D", "STR.KEY-1J9B6Z2C-7H4R", "STR.KEY-5W2T8N4M-3X9V",
+            "STR.KEY-2H7F1L9K-6Q5B", "STR.KEY-9P4X6R3J-8T1W", "STR.KEY-6C8M3V1P-2N7Z", "STR.KEY-3T1Q7F5H-4K9C", "STR.KEY-7V5N2W8X-1R3L",
+            "STR.KEY-4K9B6J1T-5M2H", "STR.KEY-8Z3R4C7P-9W6F", "STR.KEY-1M6T9H2N-3V4Q", "STR.KEY-5F2X8V1K-7L9J", "STR.KEY-2W7P3M6C-8T1B",
+            "STR.KEY-9H1J4R5Z-6X3N", "STR.KEY-3C8L7T9W-2F5P", "STR.KEY-6N4K1X2F-4Q8M", "STR.KEY-7Q9V5B8H-1J6T", "STR.KEY-4P2C6N3R-9K7V",
+            "STR.KEY-8T5M1Z7L-3W2X", "STR.KEY-1V6H9F4Q-5C8J", "STR.KEY-3X7W2T8P-6N1M", "STR.KEY-9F4R3K1V-7H5B", "STR.KEY-2J8C6M5N-4T9Z",
+            "STR.KEY-5L1P7X9W-2R3F", "STR.KEY-6B3T4H2J-8Q1K", "STR.KEY-7N9V8C1M-5X6P", "STR.KEY-4W2X5R6T-9H3L", "STR.KEY-8K1Q3F9V-1Z7N",
+            "STR.KEY-3M6H8L2C-4P5W", "STR.KEY-9T4N1J7X-6B2R", "STR.KEY-2C5P9W3K-8V1H", "STR.KEY-1F7R6Z4M-3T9Q", "STR.KEY-5X8J2T1N-7C6F",
+            "STR.KEY-6H3V7Q8P-9L4K", "STR.KEY-4Z9K5B1C-2X8J", "STR.KEY-7M1T6N3W-5H9R", "STR.KEY-2P8F4X9V-1Q7T", "STR.KEY-9W6C3H2L-4N5M",
+            "STR.KEY-3R1V7K6J-8Z2P", "STR.KEY-8N4T9M5X-1F3B", "STR.KEY-1C7H2Q8R-6W9K", "STR.KEY-5J3B6P1T-7V4N", "STR.KEY-6K9X4N2F-3H8C",
+            "STR.KEY-2V5M8W7L-9Q1Z", "STR.KEY-4H1R3C9P-2T6X", "STR.KEY-9X6T2V4K-5M1H", "STR.KEY-7F8J1N3Q-4W7B", "STR.KEY-3L2P6Z8M-1R9C",
+            "STR.KEY-5W4C9H1T-8X2F", "STR.KEY-1N7K5R3V-6J4P", "STR.KEY-8B3Q2X6L-9T5N", "STR.KEY-6M9V8T1C-3H7W", "STR.KEY-2T1F4P7K-5Z6J",
+            "STR.KEY-9C6H3N5R-2W8M", "STR.KEY-4V8X7J1W-1Q9P", "STR.KEY-7P2M9K6F-4N3B", "STR.KEY-1Z5T4C8H-7V2X", "STR.KEY-3K9R1V2N-6L5Q",
+            "STR.KEY-8F6W7M3P-1H4T", "STR.KEY-5N2C8X9J-3R1K", "STR.KEY-2H4L6T1Q-9V7Z", "STR.KEY-9Q7P3F5N-8M2C", "STR.KEY-6X1V9R4W-5K3H",
+            "STR.KEY-4T8M2K7B-1Z6P", "STR.KEY-7C3N1H6X-2W9L", "STR.KEY-1J5F8Z9V-4T7R", "STR.KEY-3W9R4P2M-6C1N", "STR.KEY-8V2T7K1H-9F5X",
+            "STR.KEY-5M6C3N8Q-7J2W", "STR.KEY-2X1P9L4T-3H6B", "STR.KEY-9H7W5F2J-1R4C", "STR.KEY-4N3K8V6X-5P9Z", "STR.KEY-6R1M2C7N-8W3T",
+            "STR.KEY-7J8Q4H1P-2K5F", "STR.KEY-1V9T6X3M-7L8N", "STR.KEY-3B5Z7R9W-4V1Q", "STR.KEY-8P2F1N4K-6C9H", "STR.KEY-5C4H6T8V-9J2R"
+        }
+    }
+})
+
+WindUI:Notify({
+    Title = "RTS-HUB v3",
+    Content = "โหลดระบบทั้งหมดสำเร็จ พร้อมใช้งาน!",
+    Duration = 3
+})
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+local RunService = game:GetService("RunService")
+
+Tab:Button({
+    Title = "Jing",
+    Callback = function()
+        print("")
+    end
+})
+loadstring(game:HttpGet("https://raw.githubusercontent.com/hacker0030mp/Hac/refs/heads/main/RTS%20Hub%20v3"))()
