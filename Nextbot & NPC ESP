@@ -1,0 +1,89 @@
+-- ==========================================================
+-- REALTIME NEXTBOT & NPC ESP MODULE
+-- ระบบมองทะลุกำแพงและติดตามความเคลื่อนไหวของ Nextbot / NPC
+-- ==========================================================
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = workspace
+local LocalPlayer = Players.LocalPlayer
+
+-- ตัวแปรเปิด/ปิดระบบ ESP
+local nextbotESPEnabled = true
+
+-- ฟังก์ชันจัดการสร้างหรือลบ ESP ของวัตถุ
+local function manageESP()
+    while true do
+        if nextbotESPEnabled then
+            -- สแกนทุกชิ้นส่วนใน Workspace แบบเรียลไทม์
+            for _, obj in ipairs(Workspace:GetDescendants()) do
+                -- ตรวจสอบว่าเป็น Model, มี Humanoid (หรือมีค่าเคลื่อนไหว), และไม่ใช่ตัวผู้เล่นเอง
+                if obj:IsA("Model") and obj ~= LocalPlayer.Character then
+                    local humanoid = obj:FindFirstChildOfClass("Humanoid")
+                    local rootPart = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Head")
+                    
+                    -- เช็คว่าเป็น NPC, Nextbot หรือ Monster (ไม่ใช่ Player ปกติ)
+                    if humanoid and rootPart and not Players:GetPlayerFromCharacter(obj) then
+                        
+                        -- 1. สร้างกรอบมองทะลุกำแพง (Highlight) สีแดงสว่างสะดุดตา
+                        if not obj:FindFirstChild("Nextbot_Highlight") then
+                            local highlight = Instance.new("Highlight")
+                            highlight.Name = "Nextbot_Highlight"
+                            highlight.FillColor = Color3.fromRGB(255, 50, 50) -- สีแดงเข้มเด่นชัด
+                            highlight.OutlineColor = Color3.fromRGB(255, 255, 255) -- ขอบสีขาว
+                            highlight.FillTransparency = 0.3
+                            highlight.OutlineTransparency = 0
+                            highlight.Parent = obj
+                        end
+                        
+                        -- 2. สร้างป้ายชื่อและระยะทางลอยเหนือหัว (BillboardGui)
+                        if not obj:FindFirstChild("Nextbot_Billboard") then
+                            local billboard = Instance.new("BillboardGui")
+                            billboard.Name = "Nextbot_Billboard"
+                            billboard.Size = UDim2.new(0, 160, 0, 50)
+                            billboard.StudsOffset = Vector3.new(0, 3.5, 0)
+                            billboard.AlwaysOnTop = true
+                            billboard.Parent = obj
+                            
+                            local textLabel = Instance.new("TextLabel")
+                            textLabel.Name = "TrackerText"
+                            textLabel.Size = UDim2.new(1, 0, 1, 0)
+                            textLabel.BackgroundTransparency = 1
+                            textLabel.TextColor3 = Color3.fromRGB(255, 255, 0) -- ตัวหนังสือสีเหลือง
+                            textLabel.TextStrokeTransparency = 0 -- มีขอบดำเพื่อให้มองเห็นง่าย
+                            textLabel.TextSize = 13
+                            textLabel.Font = Enum.Font.GothamBold
+                            textLabel.Parent = billboard
+                        end
+                        
+                        -- 3. อัปเดตระยะทาง (Distance) แบบเรียลไทม์ทุกๆ เฟรม/ลูป
+                        local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                        if myRoot and obj:FindFirstChild("Nextbot_Billboard") then
+                            local distance = math.floor((rootPart.Position - myRoot.Position).Magnitude)
+                            local label = obj.Nextbot_Billboard:FindFirstChild("TrackerText")
+                            if label then
+                                label.Text = "🚨 " .. obj.Name .. "\n[ ระยะห่าง: " .. distance .. " ม. ]"
+                            end
+                        end
+                    end
+                end
+            end
+        else
+            -- ถ้าปิดระบบ ให้ล้าง Highlight และป้ายชื่อทั้งหมดทิ้งทันที
+            for _, obj in ipairs(Workspace:GetDescendants()) do
+                if obj:IsA("Model") and not Players:GetPlayerFromCharacter(obj) then
+                    local hl = obj:FindFirstChild("Nextbot_Highlight")
+                    local tag = obj:FindFirstChild("Nextbot_Billboard")
+                    if hl then hl:Destroy() end
+                    if tag then tag:Destroy() end
+                end
+            end
+        end
+        task.wait(0.3) -- เช็คอัปเดตทุกๆ 0.3 วินาที เพื่อความรวดเร็วและลื่นไหลไม่กินเครื่อง
+    end
+end
+
+-- เริ่มรันระบบเบื้องหลังทันที
+task.spawn(manageESP)
+
+print("[Nextbot ESP]: เปิดใช้งานระบบมองเรียลไทม์สำเร็จ!")
