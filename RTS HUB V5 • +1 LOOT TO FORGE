@@ -32,16 +32,6 @@ local CoreGui = game:GetService("CoreGui")
 local Player = Players.LocalPlayer
 
 --============================================================
--- URL
---============================================================
-
-local ENGINE_URL =
-    "https://raw.githubusercontent.com/seltonmt012/sel01-rbx/main/games/loottoforge.lua"
-
-local HUB_URL =
-    "https://raw.githubusercontent.com/khauow386-dot/Kha-hup-rayfi/refs/heads/main/Minh%20kha%20hup%20ui%20l"
-
---============================================================
 -- LANGUAGE (TH / EN)
 --============================================================
 
