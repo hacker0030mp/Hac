@@ -1,0 +1,171 @@
+local function oreList(d)
+	local list = {}
+	for uid, it in pairs((d.Backpack and d.Backpack.have) or {}) do
+		if it.Type == "Ore" then
+			list[#list + 1] = {
+				uuid = uid, id = tostring(it.ID), n = tonumber(it.Number) or 1,
+				rank = tonumber(tostring(it.ID):match("%d+")) or 0,
+			}
+		end
+	end
+	table.sort(list, function(a, b) return a.rank > b.rank end)
+	return list
+end
+
+local function doForge()
+	if not CONFIG.forge then return end
+	local d = data()
+	if not d then return end
+	local list = oreList(d)
+	-- Payload strict rules: At least 4 ore types/items, category is "Weapon" or alternates with "Armor"
+	local totalOre = 0
+	for _, o in ipairs(list) do totalOre = totalOre + o.n end
+	if totalOre < 4 then return end
+
+	local picked = {}
+	local count = 0
+	for _, o in ipairs(list) do
+		for _ = 1, o.n do
+			if count < 4 then
+				picked[#picked + 1] = o.uuid
+				count = count + 1
+			end
+		end
+	end
+	if #picked < 4 then return end
+
+	local cat = "Weapon"
+	if CONFIG.forgeArmor then
+		STATE.forgeFlip = not STATE.forgeFlip
+		if STATE.forgeFlip then cat = "Armor" end
+	end
+
+	local ok, res = pcall(function()
+		return R.forge:InvokeServer(cat, picked)
+	end)
+	if ok then
+		STATE.forged = STATE.forged + 1
+		STATE.lastForge = os.date("%H:%M:%S") .. " (" .. cat .. ")"
+	end
+	task.wait(1)
+end
+
+local function doEquipAndSell(d)
+	local bp = d.Backpack or {}
+	local have = bp.have or {}
+	local eq = bp.equiped or {}
+
+	-- 1. หา Weapon ที่มี Train สูงที่สุดเพื่อสวมใส่
+	if CONFIG.equip then
+		local bestUuid, bestVal = nil, -1
+		for uid, it in pairs(have) do
+			if it.Type == "Weapon" then
+				local v = gearValue(have, it)
+				if v > bestVal then
+					bestVal = v
+					bestUuid = uid
+				end
+			end
+		end
+		if bestUuid and eq["Weapon"] ~= bestUuid then
+			pcall(function()
+				local eqRem = wfc(wfc(Remote, "Backpack"), "EquipRE")
+				if eqRem then eqRem:FireServer("Weapon", bestUuid) end
+			end)
+			task.wait(0.5)
+		end
+	end
+
+	-- 2. ขายอาวุธที่อ่อนกว่าชิ้นที่สวมใส่อยู่ (ยกเว้นชิ้นที่ดีที่สุดหรือติด Enchant)
+	if CONFIG.sell then
+		refresh(true)
+		local currentWornVal = STATE.weaponTrain
+		for uid, it in pairs(have) do
+			if it.Type == "Weapon" and uid ~= eq["Weapon"] then
+				local v = gearValue(have, it)
+				if v < currentWornVal and not it.Enchant then
+					pcall(function()
+						local sellRem = wfc(wfc(Remote, "Backpack"), "SellRE")
+						if sellRem then sellRem:FireServer({uid}) end
+					end)
+					STATE.sold = STATE.sold + 1
+					task.wait(0.2)
+				end
+			end
+		end
+	end
+end
+
+--------------------------------------------------------------------------------
+-- อัปเกรด & เกิดใหม่ (Rebirth)
+--------------------------------------------------------------------------------
+
+local function doUpgrades()
+	if not CONFIG.upgrade then return end
+	local upgRem = wfc(wfc(Remote, "Upgrade"), "UpgradeRE")
+	if not upgRem then return end
+
+	local list = {}
+	if CONFIG.upgOrePack then list[#list + 1] = "OrePack" end
+	if CONFIG.upgTrain then list[#list + 1] = "Train" end
+	if CONFIG.upgLuck then list[#list + 1] = "Luck" end
+
+	for _, name in ipairs(list) do
+		if STATE.coin > CONFIG.coinKeep then
+			pcall(function()
+				upgRem:FireServer(name)
+			end)
+			STATE.upgrades = STATE.upgrades + 1
+			task.wait(0.2)
+			refresh(true)
+		end
+	end
+end
+
+local function checkRebirth()
+	if not CONFIG.rebirth then return end
+	if STATE.level >= STATE.needLevel and STATE.needLevel > 0 then
+		local ok = pcall(function() R.rebirth:FireServer() end)
+		if ok then
+			STATE.rebirths = STATE.rebirths + 1
+			task.wait(1)
+			refresh(true)
+		end
+	end
+end
+
+--------------------------------------------------------------------------------
+-- ลูปการทำงานหลัก (Main Loop)
+--------------------------------------------------------------------------------
+
+task.spawn(function()
+	while GEN == _G.__LOOTTOFORGE do
+		if CONFIG.auto then
+			pcall(function()
+				refresh(true)
+				checkRebirth()
+				doUpgrades()
+
+				local d = data()
+				if d then
+					doEquipAndSell(d)
+					if STATE.ore >= 4 then
+						doForge()
+					end
+				end
+
+				if CONFIG.farm then
+					stageRun()
+				end
+
+				if CONFIG.train then
+					trainPass(CONFIG.trainSecs)
+				end
+			end)
+		end
+		task.wait(1)
+	end
+end)
+
+print("MINH KHA HUB • [Races]+1 Loot To Forge Loaded Successfully!")
+
