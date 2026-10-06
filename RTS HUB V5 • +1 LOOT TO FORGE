@@ -1,0 +1,954 @@
+--============================================================
+--          RTS HUB V5 • +1 LOOT TO FORGE
+--
+--          UI HIỆN NGAY
+--          ENGINE CHẠY NỀN
+--          TIẾNG THÁI / ENGLISH
+--          MOBILE
+--          NO KEY
+--          TẤT CẢ AUTO TẮT MẶC ĐỊNH
+--============================================================
+
+--============================================================
+-- GAME CHECK
+--============================================================
+
+local GAME_ID = 118805555015549
+
+if game.PlaceId ~= GAME_ID then
+    warn("RTS HUB V5: Đây không phải game +1 Loot To Forge!")
+    return
+end
+
+--============================================================
+-- SERVICES
+--============================================================
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+
+local Player = Players.LocalPlayer
+
+--============================================================
+-- URL
+--============================================================
+
+local ENGINE_URL =
+    "https://raw.githubusercontent.com/seltonmt012/sel01-rbx/main/games/loottoforge.lua"
+
+local HUB_URL =
+    "https://raw.githubusercontent.com/khauow386-dot/Kha-hup-rayfi/refs/heads/main/Minh%20kha%20hup%20ui%20l"
+
+--============================================================
+-- LANGUAGE (TH / EN)
+--============================================================
+
+local Language = "TH"
+
+local LANG = {
+
+    TH = {
+
+        title = "RTS HUB V5",
+
+        settings = "⚙️ ตั้งค่า",
+        vietnamese = "🇹🇭 ภาษาไทย",
+        english = "🇬🇧 English",
+
+        general = "🏠 ทั่วไป",
+        farm = "⚔️ ฟาร์ม",
+        forge = "🔨 สร้างอุปกรณ์",
+        upgrade = "📈 อัปเกรด",
+        index = "📖 สมุดภาพ/ดัชนี",
+        tower = "🏰 หอคอยน้ำแข็ง",
+        enchant = "✨ ออฟชั่น/เสริมพลัง",
+        race = "🧬 เผ่าพันธุ์",
+        rebirth = "🔄 เกิดใหม่",
+        player = "👤 ผู้เล่น",
+        status = "📊 สถานะ",
+        discord = "💬 ดิสคอร์ด",
+
+        auto = "เปิดระบบอัตโนมัติทั้งหมด",
+        autoOn = "▶️ เริ่มออโต้",
+        disable = "⛔ ปิดทั้งหมด",
+        refresh = "🔄 รีเฟรชข้อมูล",
+        unstuck = "🛠️ แก้ติดบั๊ก/ติดหลุม",
+
+        farmStage = "ฟาร์มด่านอัตโนมัติ",
+        train = "ฝึกพลังอัตโนมัติ",
+        stage = "เลือกด่านฟาร์ม",
+        trainTime = "เวลาฝึกพลัง (วิ)",
+        farmOnce = "⚔️ ฟาร์ม 1 รอบ",
+        trainOnce = "🏋️ ฝึกพลัง 1 รอบ",
+
+        autoForge = "ตีบวก/สร้างของอัตโนมัติ",
+        armor = "สร้างเกราะเพิ่มเติม",
+        equip = "สวมใส่อุปกรณ์ที่ดีที่สุด",
+        sell = "ขายอุปกรณ์ขยะอัตโนมัติ",
+        forgeNow = "🔨 สร้างของทันที",
+        equipNow = "⭐ ใส่ของดีที่สุด",
+        sellNow = "💰 ขายของขยะ",
+
+        autoUpgrade = "อัปเกรดอัตโนมัติ",
+        oreFirst = "เน้นช่องเก็บแร่ก่อน",
+        oreUpgrade = "อัปช่องเก็บแร่",
+        trainUpgrade = "อัปความเร็วฝึก",
+        luckUpgrade = "อัปความโชคดี",
+        upgradeNow = "📈 อัปเกรดทันที",
+
+        autoIndex = "รับแต้มดัชนีอัตโนมัติ",
+        indexNow = "📖 รับแต้มดัชนี",
+
+        autoTower = "ลงหอคอยน้ำแข็งออโต้",
+        dailyTicket = "รับตั๋วรายวันออโต้",
+        ticketKeep = "จำนวนตั๋วที่ต้องการเก็บ",
+        towerRun = "🏰 ลงหอคอยน้ำแข็ง",
+        ticketNow = "🎟️ รับตั๋วรายวัน",
+
+        autoEnchant = "เสริมพลัง/สุ่มธาตุออโต้",
+        fire = "🔥 ธาตุไฟ",
+        ice = "❄️ ธาตุน้ำแข็ง",
+        thunder = "⚡ ธาตุสายฟ้า",
+        poison = "☠️ ธาตุพิษ",
+        enchantNow = "✨ เสริมพลังทันที",
+
+        autoRace = "สุ่มเผ่าพันธุ์ออโต้",
+        raceNow = "🧬 สุ่ม/เลือกเผ่าที่ดี",
+
+        autoRebirth = "เกิดใหม่ (Rebirth) ออโต้",
+        rebirthNow = "🔄 เกิดใหม่ทันที",
+
+        antiAfk = "ป้องกันหลุด (Anti-AFK)",
+        infiniteJump = "กระโดดไม่จำกัด",
+        noclip = "เดินทะลุกำแพง",
+        speed = "ความเร็วเดิน",
+        resetSpeed = "🏃 รีเซ็ตความเร็วเป็น 16",
+
+        refreshStatus = "🔄 รีเฟรชสถานะ",
+        disableAll = "⛔ ปิดการทำงานทั้งหมด",
+        stuck = "🛠️ ปลดติดบั๊ก",
+
+        engineLoading = "กำลังโหลดระบบ...",
+        engineReady = "ระบบพร้อมใช้งาน",
+        engineError = "ระบบเกิดข้อผิดพลาด",
+        languageChanged = "เปลี่ยนเป็นภาษาไทยเรียบร้อย",
+        copyDiscord = "📋 คัดลอกลิงก์ Discord",
+        discordCopied = "คัดลอกลิงก์ Discord เรียบร้อยแล้ว!"
+    },
+
+    EN = {
+
+        title = "RTS HUB V5",
+
+        settings = "⚙️ SETTINGS",
+        vietnamese = "🇹🇭 Thai",
+        english = "🇬🇧 English",
+
+        general = "🏠 GENERAL",
+        farm = "⚔️ FARM",
+        forge = "🔨 EQUIPMENT",
+        upgrade = "📈 UPGRADES",
+        index = "📖 INDEX",
+        tower = "🏰 ICE TOWER",
+        enchant = "✨ ENCHANT",
+        race = "🧬 RACE",
+        rebirth = "🔄 REBIRTH",
+        player = "👤 PLAYER",
+        status = "📊 STATUS",
+        discord = "💬 DISCORD",
+
+        auto = "Enable automation",
+        autoOn = "▶️ Enable Auto",
+        disable = "⛔ Disable All",
+        refresh = "🔄 Refresh Data",
+        unstuck = "🛠️ Unstuck",
+
+        farmStage = "Auto farm stage",
+        train = "Auto train power",
+        stage = "Farm stage",
+        trainTime = "Training time",
+        farmOnce = "⚔️ Farm Once",
+        trainOnce = "🏋️ Train Once",
+
+        autoForge = "Auto forge",
+        armor = "Forge extra armor",
+        equip = "Auto equip best",
+        sell = "Auto sell weak items",
+        forgeNow = "🔨 Forge Now",
+        equipNow = "⭐ Equip Best",
+        sellNow = "💰 Sell Weak Items",
+
+        autoUpgrade = "Auto upgrade",
+        oreFirst = "Prioritize ore bag",
+        oreUpgrade = "Upgrade ore bag",
+        trainUpgrade = "Upgrade training",
+        luckUpgrade = "Upgrade luck",
+        upgradeNow = "📈 Upgrade Now",
+
+        autoIndex = "Auto claim index",
+        indexNow = "📖 Claim Index",
+
+        autoTower = "Auto Ice Tower",
+        dailyTicket = "Auto claim daily ticket",
+        ticketKeep = "Tickets to keep",
+        towerRun = "🏰 Run Ice Tower",
+        ticketNow = "🎟️ Claim Daily Ticket",
+
+        autoEnchant = "Auto enchant",
+        fire = "🔥 Fire Enchant",
+        ice = "❄️ Ice Enchant",
+        thunder = "⚡ Thunder Enchant",
+        poison = "☠️ Poison Enchant",
+        enchantNow = "✨ Enchant Now",
+
+        autoRace = "Auto roll race",
+        raceNow = "🧬 Roll / Select Good Race",
+
+        autoRebirth = "Auto rebirth",
+        rebirthNow = "🔄 Rebirth Now",
+
+        antiAfk = "Anti AFK",
+        infiniteJump = "Infinite Jump",
+        noclip = "Noclip",
+        speed = "Walk Speed",
+        resetSpeed = "🏃 Reset Speed to 16",
+
+        refreshStatus = "🔄 Refresh Status",
+        disableAll = "⛔ DISABLE EVERYTHING",
+        stuck = "🛠️ UNSTUCK",
+
+        engineLoading = "ENGINE: LOADING",
+        engineReady = "ENGINE: CONNECTED",
+        engineError = "ENGINE: ERROR",
+        languageChanged = "Language changed to English",
+        copyDiscord = "📋 Copy Discord Link",
+        discordCopied = "Discord link copied to clipboard!"
+    }
+}
+
+local function T(Key)
+    return LANG[Language][Key] or Key
+end
+
+--============================================================
+-- ENGINE STATE
+--============================================================
+
+local Debug = _G.__LOOTTOFORGE_DBG
+local CONFIG = Debug and Debug.CONFIG
+local STATE = Debug and Debug.STATE
+
+local EngineReady = Debug ~= nil
+local EngineLoading = false
+local EngineError = nil
+
+--============================================================
+-- UPDATE ENGINE
+--============================================================
+
+local function UpdateEngineState()
+
+    Debug = _G.__LOOTTOFORGE_DBG
+
+    if Debug then
+
+        EngineReady = true
+        CONFIG = Debug.CONFIG
+        STATE = Debug.STATE
+
+        return true
+
+    end
+
+    return false
+end
+
+--============================================================
+-- DEFAULT CONFIG
+--============================================================
+
+local function DisableEverything()
+
+    if not UpdateEngineState() then
+        return
+    end
+
+    if not CONFIG then
+        return
+    end
+
+    CONFIG.auto = false
+
+    CONFIG.farm = false
+    CONFIG.train = false
+
+    CONFIG.forge = false
+    CONFIG.forgeArmor = false
+    CONFIG.equip = false
+    CONFIG.sell = false
+
+    CONFIG.upgrade = false
+    CONFIG.orePackFirst = false
+    CONFIG.upgOrePack = false
+    CONFIG.upgTrain = false
+    CONFIG.upgLuck = false
+
+    CONFIG.rebirth = false
+    CONFIG.index = false
+
+    CONFIG.tower = false
+    CONFIG.dailyTicket = false
+
+    CONFIG.enchant = false
+    CONFIG.race = false
+
+    CONFIG.antiAfk = false
+end
+
+--============================================================
+-- ENGINE LOADER
+--============================================================
+
+local function LoadEngine()
+
+    if EngineLoading or EngineReady then
+        return
+    end
+
+    EngineLoading = true
+
+    task.spawn(function()
+
+        local ok, err = pcall(function()
+
+            local Source = game:HttpGet(ENGINE_URL)
+
+            if not Source or #Source < 1000 then
+                error("Engine rỗng hoặc không tải được")
+            end
+
+            local Loader, CompileError =
+                loadstring(Source)
+
+            if not Loader then
+                error(
+                    CompileError
+                    or "Không compile được Engine"
+                )
+            end
+
+            Loader()
+
+        end)
+
+        if not ok then
+
+            EngineError = err
+
+            warn(
+                "RTS HUB V5 ENGINE ERROR:",
+                err
+            )
+
+        end
+
+        UpdateEngineState()
+
+        if EngineReady and CONFIG then
+
+            CONFIG.auto = false
+
+            CONFIG.farm = false
+            CONFIG.train = false
+
+            CONFIG.forge = false
+            CONFIG.forgeArmor = false
+            CONFIG.equip = false
+            CONFIG.sell = false
+
+            CONFIG.upgrade = false
+            CONFIG.orePackFirst = false
+            CONFIG.upgOrePack = false
+            CONFIG.upgTrain = false
+            CONFIG.upgLuck = false
+
+            CONFIG.rebirth = false
+            CONFIG.index = false
+
+            CONFIG.tower = false
+            CONFIG.dailyTicket = false
+            CONFIG.towerKeep = 0
+
+            CONFIG.enchant = false
+            CONFIG.race = false
+
+            CONFIG.antiAfk = false
+
+            CONFIG.stage = 0
+            CONFIG.trainSecs = 20
+            CONFIG.coinKeep = 0
+            CONFIG.element = "Fire"
+
+            print(
+                "RTS HUB V5: ENGINE ĐÃ SẴN SÀNG"
+            )
+
+        end
+
+        EngineLoading = false
+
+    end)
+end
+
+--============================================================
+-- START ENGINE NGAY
+--============================================================
+
+LoadEngine()
+
+--============================================================
+-- CONFIG HELPER
+--============================================================
+
+local function SetConfig(Name, Value)
+
+    if UpdateEngineState() and CONFIG then
+
+        CONFIG[Name] = Value
+
+        return true
+
+    end
+
+    return false
+end
+
+--============================================================
+-- CALL ENGINE
+--============================================================
+
+local function Call(Name, ...)
+
+    local Args = table.pack(...)
+
+    task.spawn(function()
+
+        if not UpdateEngineState() then
+
+            warn(
+                "RTS HUB V5:",
+                Name,
+                "Engine chưa sẵn sàng"
+            )
+
+            return
+        end
+
+        if not Debug then
+            return
+        end
+
+        local Function = Debug[Name]
+
+        if type(Function) ~= "function" then
+
+            warn(
+                "RTS HUB V5:",
+                "Không tìm thấy chức năng:",
+                Name
+            )
+
+            return
+        end
+
+        local ok, err = pcall(function()
+
+            Function(
+                table.unpack(
+                    Args,
+                    1,
+                    Args.n
+                )
+            )
+
+        end)
+
+        if not ok then
+
+            warn(
+                "RTS HUB V5:",
+                Name,
+                err
+            )
+
+        end
+
+    end)
+end
+
+--============================================================
+-- PLAYER
+--============================================================
+
+local AntiAFK = false
+local InfiniteJump = false
+local NoClip = false
+local Speed = 16
+
+local function SetSpeed(Value)
+
+    Speed = math.clamp(
+        math.floor(
+            tonumber(Value) or 16
+        ),
+        1,
+        250
+    )
+
+    local Character =
+        Player.Character
+
+    local Humanoid =
+        Character
+        and Character:FindFirstChildOfClass(
+            "Humanoid"
+        )
+
+    if Humanoid then
+        Humanoid.WalkSpeed = Speed
+    end
+end
+
+--============================================================
+-- BUILD UI
+--============================================================
+
+local Library = nil
+
+local function LoadLibrary()
+
+    local Source = game:HttpGet(HUB_URL)
+
+    if not Source or #Source < 100 then
+        error("Library rỗng")
+    end
+
+    local Loader, CompileError =
+        loadstring(Source)
+
+    if not Loader then
+        error(
+            CompileError
+            or "Không compile được Library"
+        )
+    end
+
+    return Loader()
+end
+
+local function BuildUI()
+
+    local ok, Result = pcall(function()
+        return LoadLibrary()
+    end)
+
+    if not ok or not Result then
+
+        warn(
+            "RTS HUB V5 LIBRARY ERROR:",
+            Result
+        )
+
+        return false
+    end
+
+    Library = Result
+
+    --========================================================
+    -- TỔNG QUÁT
+    --========================================================
+
+    local TongQuat =
+        Library:CreateTab(T("general"))
+
+    TongQuat:CreateToggle(
+        T("auto"),
+        false,
+        function(Value)
+
+            SetConfig("auto", Value)
+
+        end
+    )
+
+    TongQuat:CreateButton(
+        T("autoOn"),
+        function()
+
+            SetConfig("auto", true)
+
+        end
+    )
+
+    TongQuat:CreateButton(
+        T("disable"),
+        function()
+
+            DisableEverything()
+
+        end
+    )
+
+    TongQuat:CreateButton(
+        T("refresh"),
+        function()
+
+            Call("refresh", true)
+
+        end
+    )
+
+    TongQuat:CreateButton(
+        T("unstuck"),
+        function()
+
+            Call("unstuck")
+
+        end
+    )
+
+    --========================================================
+    -- FARM
+    --========================================================
+
+    local Farm =
+        Library:CreateTab(T("farm"))
+
+    Farm:CreateToggle(
+        T("farmStage"),
+        false,
+        function(Value)
+
+            SetConfig("farm", Value)
+
+        end
+    )
+
+    Farm:CreateToggle(
+        T("train"),
+        false,
+        function(Value)
+
+            SetConfig("train", Value)
+
+        end
+    )
+
+    Farm:CreateInput(
+        T("stage"),
+        0,
+        function(Value)
+
+            SetConfig(
+                "stage",
+                math.clamp(
+                    math.floor(
+                        tonumber(Value) or 0
+                    ),
+                    0,
+                    27
+                )
+            )
+
+        end
+    )
+
+    Farm:CreateInput(
+        T("trainTime"),
+        20,
+        function(Value)
+
+            SetConfig(
+                "trainSecs",
+                math.clamp(
+                    tonumber(Value) or 20,
+                    5,
+                    120
+                )
+            )
+
+        end
+    )
+
+    Farm:CreateButton(
+        T("farmOnce"),
+        function()
+
+            Call("stageRun")
+
+        end
+    )
+
+    Farm:CreateButton(
+        T("trainOnce"),
+        function()
+
+            if not UpdateEngineState() then
+
+                Call(
+                    "trainPass",
+                    20
+                )
+
+                return
+            end
+
+            local OldAuto =
+                CONFIG.auto
+
+            CONFIG.auto = true
+
+            local Duration =
+                CONFIG.trainSecs or 20
+
+            Call(
+                "trainPass",
+                Duration
+            )
+
+            task.delay(
+                Duration + 1,
+                function()
+
+                    if CONFIG then
+                        CONFIG.auto = OldAuto
+                    end
+
+                end
+            )
+
+        end
+    )
+
+    --========================================================
+    -- RÈN
+    --========================================================
+
+    local Ren =
+        Library:CreateTab(T("forge"))
+
+    Ren:CreateToggle(
+        T("autoForge"),
+        false,
+        function(Value)
+
+            SetConfig("forge", Value)
+
+        end
+    )
+
+    Ren:CreateToggle(
+        T("armor"),
+        false,
+        function(Value)
+
+            SetConfig("forgeArmor", Value)
+
+        end
+    )
+
+    Ren:CreateToggle(
+        T("equip"),
+        false,
+        function(Value)
+
+            SetConfig("equip", Value)
+
+        end
+    )
+
+    Ren:CreateToggle(
+        T("sell"),
+        false,
+        function(Value)
+
+            SetConfig("sell", Value)
+
+        end
+    )
+
+    Ren:CreateButton(
+        T("forgeNow"),
+        function()
+
+            Call("forgePass")
+
+        end
+    )
+
+    Ren:CreateButton(
+        T("equipNow"),
+        function()
+
+            Call("equipPass")
+
+        end
+    )
+
+    Ren:CreateButton(
+        T("sellNow"),
+        function()
+
+            Call("sellPass")
+
+        end
+    )
+
+    --========================================================
+    -- NÂNG CẤP
+    --========================================================
+
+    local NangCap =
+        Library:CreateTab(T("upgrade"))
+
+    NangCap:CreateToggle(
+        T("autoUpgrade"),
+        false,
+        function(Value)
+
+            SetConfig("upgrade", Value)
+
+        end
+    )
+
+    NangCap:CreateToggle(
+        T("oreFirst"),
+        false,
+        function(Value)
+
+            SetConfig(
+                "orePackFirst",
+                Value
+            )
+
+        end
+    )
+
+    NangCap:CreateToggle(
+        T("oreUpgrade"),
+        false,
+        function(Value)
+
+            SetConfig(
+                "upgOrePack",
+                Value
+            )
+
+        end
+    )
+
+    NangCap:CreateToggle(
+        T("trainUpgrade"),
+        false,
+        function(Value)
+
+            SetConfig(
+                "upgTrain",
+                Value
+            )
+
+        end
+    )
+
+    NangCap:CreateToggle(
+        T("luckUpgrade"),
+        false,
+        function(Value)
+
+            SetConfig(
+                "upgLuck",
+                Value
+            )
+
+        end
+    )
+
+    NangCap:CreateButton(
+        T("upgradeNow"),
+        function()
+
+            Call("upgradePass")
+
+        end
+    )
+
+    --========================================================
+    -- CHỈ SỐ
+    --========================================================
+
+    local ChiSo =
+        Library:CreateTab(T("index"))
+
+    ChiSo:CreateToggle(
+        T("autoIndex"),
+        false,
+        function(Value)
+
+            SetConfig(
+                "index",
+                Value
+            )
+
+        end
+    )
+
+    ChiSo:CreateButton(
+        T("indexNow"),
+        function()
+
+            Call("indexPass")
+
+        end
+    )
+
+    --========================================================
+    -- THÁP BĂNG
+    --========================================================
+
+    local Tower =
+        Library:CreateTab(T("tower"))
+
+    Tower:CreateToggle(
+        T("autoTower"),
+        false,
+        function(Value)
+
+            SetConfig(
+                "tower",
+                Value
+            )
+
+        end
+    )
+
+    Tower:CreateToggle(
+        T("dailyTicket"),
+        false,
+        function(Value)
+
+            SetConfig(
+                "dailyTicket",
+                Value
+            )
+
+        end
+    )
+
+    Tower:CreateInput(
+        T("ticketKeep"),
+        0,
+        function(Value)
+
+        
