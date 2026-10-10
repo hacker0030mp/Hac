@@ -108,6 +108,39 @@ MainSection:Button({
     end
 })
 (ล้างประวัติการค้นหา)
+-- ==========================================================
+-- ⚙️ ตัวอย่างการใช้งานปุ่มล้างข้อมูล (Clear Input / Data) ใน WindUI
+-- ==========================================================
+local SettingsTab = Window:Tab({ Title = "Settings", Icon = "settings" })
+local SettingsSection = SettingsTab:Section({ Title = "Utilities" })
+
+-- สร้างช่องกรอกข้อความ (Input)
+local InputBox = SettingsSection:Input({
+    Title = "กรอกข้อมูล / คีย์สคริปต์",
+    Placeholder = "พิมพ์ข้อความที่นี่...",
+    Callback = function(text)
+        -- ค่าที่ผู้เล่นพิมพ์เข้ามา
+    end
+})
+
+-- สร้างปุ่มสำหรับล้างข้อมูล
+SettingsSection:Button({
+    Title = "🧹 ล้างข้อมูล",
+    Callback = function()
+        -- ถ้าต้องการรีเซ็ตค่าในช่อง Input (ขึ้นอยู่กับฟังก์ชันของ WindUI ที่ใช้งาน)
+        if InputBox and InputBox.SetText then
+            InputBox:SetText("")
+        end
+        
+        -- แจ้งเตือนแจ้งผู้เล่นว่าล้างข้อมูลเรียบร้อยแล้ว
+        WindUI:Notify({ 
+            Title = "ล้างข้อมูล", 
+            Content = "ล้างช่องกรอกข้อมูลเรียบร้อยแล้ว", 
+            Duration = 2 
+        })
+    end
+})
+
 
 -- ปุ่มเซฟสคริป (สีหลือง)
 MainSection:Button({
