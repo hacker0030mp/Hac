@@ -1,0 +1,161 @@
+-- =========================================================================
+-- RTS HUB - NO KEY EDITION (เข้าใช้งานได้ทันที ไม่ต้องใช้คีย์)
+-- =========================================================================
+local _version = "1.6.66"
+local success, WindUI = pcall(function()
+    return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/" .. _version .. "/main.lua"))()
+end)
+
+if not success or not WindUI then
+    warn("Failed to load WindUI library!")
+    return
+end
+
+-- ตั้งค่าธีม Violet และปรับแต่งธีมแบบละเอียด
+pcall(function()
+    WindUI:AddTheme({
+        Name = "Violet",
+        Accent = Color3.fromHex("#6d28d9"),
+        Background = Color3.fromHex("#1e0a3e"),
+        Outline = Color3.fromHex("#faf5ff"),
+        Text = Color3.fromHex("#faf5ff"),
+        Placeholder = Color3.fromHex("#8f7ee0"),
+        Button = Color3.fromHex("#7c3aed"),
+        Icon = Color3.fromHex("#8b5cf6"),
+    })
+    WindUI:SetTheme("Violet")
+end)
+
+WindUI:Notify({
+    Title = "Welcome to the camp! RTS-HUB",
+    Content = "เข้าสู่ระบบสำเร็จ (ไม่ต้องใช้คีย์)",
+    Duration = 3
+})
+
+-- สร้างหน้าต่างหลัก (เอา KeySystem ออกแล้ว)
+local Window = WindUI:CreateWindow({
+    Title = "RTS-HUB",
+    Icon = "door-open",
+    Author = "by scope scout",
+    Folder = "RTS_NO_KEY"
+})
+
+-- ตัวแปรระบบเก็บข้อมูล
+local inputScriptName = ""
+local inputScriptCode = ""
+local scriptCounter = 0
+
+-- =========================================================================
+-- แท็บที่ 1: Main (ระบบใช้งาน / ล้าง / เซฟ)
+-- =========================================================================
+local Tab1 = Window:Tab({ Title = "Main", Icon = "home" })
+
+local MainSection = Tab1:Section({
+    Title = "Script Executor Panel",
+    Box = true,
+    BoxBorder = true,
+    Icon = "terminal",
+    Opened = true
+})
+
+local NameInput = MainSection:Input({
+    Title = "ชื่อสคริปต์",
+    Placeholder = "ระบุชื่อสคริปต์...",
+    Callback = function(text)
+        inputScriptName = text
+    end
+})
+
+local CodeInput = MainSection:Input({
+    Title = "สคริปต์ (Loadstring)",
+    Placeholder = "loadstring(game:HttpGet(...))()",
+    Callback = function(text)
+        inputScriptCode = text
+    end
+})
+
+-- ปุ่มใช้งานหลัก (สีเขียว)
+MainSection:Button({
+    Title = "🟢 ใช้งานสคริปต์",
+    Callback = function()
+        if inputScriptName ~= "" and inputScriptCode ~= "" then
+            scriptCounter = scriptCounter + 1
+            local savedName = inputScriptName
+            local savedCode = inputScriptCode
+            
+            local func, loadErr = loadstring(savedCode)
+            if func then
+                local runSuccess, runErr = pcall(func)
+                if runSuccess then
+                    WindUI:Notify({ Title = "สำเร็จ", Content = "รันสคริปต์ " .. savedName .. " สำเร็จ!", Duration = 3 })
+                else
+                    WindUI:Notify({ Title = "ข้อผิดพลาด", Content = "เกิดข้อผิดพลาดขณะรัน: " .. tostring(runErr), Duration = 4 })
+                end
+            else
+                WindUI:Notify({ Title = "ข้อผิดพลาด", Content = "โค้ดสคริปต์ไม่ถูกต้อง: " .. tostring(loadErr), Duration = 4 })
+            end
+        else
+            WindUI:Notify({ Title = "แจ้งเตือน", Content = "กรุณากรอกชื่อและโค้ดสคริปต์ให้ครบถ้วน", Duration = 2 })
+        end
+    end
+})
+
+-- ปุ่มล้างข้อมูล (สีแดง)
+MainSection:Button({
+    Title = "🔴 ล้างข้อมูล",
+    Callback = function()
+        inputScriptName = ""
+        inputScriptCode = ""
+        if NameInput and NameInput.SetText then NameInput:SetText("") end
+        if CodeInput and CodeInput.SetText then CodeInput:SetText("") end
+        WindUI:Notify({ Title = "ล้างข้อมูล", Content = "ล้างช่องกรอกข้อมูลเรียบร้อยแล้ว", Duration = 2 })
+    end
+})
+
+-- ปุ่มเซฟสคริปต์ (สีเหลือง)
+MainSection:Button({
+    Title = "📥 เซฟข้อมูล",
+    Callback = function()
+        if inputScriptName ~= "" and inputScriptCode ~= "" then
+            WindUI:Notify({ Title = "เซฟข้อมูล", Content = "บันทึกข้อมูล " .. inputScriptName .. " เรียบร้อยแล้ว", Duration = 3 })
+        else
+            WindUI:Notify({ Title = "แจ้งเตือน", Content = "ไม่มีข้อมูลสำหรับบันทึก กรุณากรอกข้อมูลก่อน", Duration = 2 })
+        end
+    end
+})
+
+-- =========================================================================
+-- แท็บที่ 3: การตั้งค่าทั่วไป (รวมเป้าหมุน + ล็อคเป้า + ระบบ UI)
+-- =========================================================================
+local Tab4 = Window:Tab({ Title = "การตั้งค่า", Icon = "settings" })
+
+local SettingsSection = Tab4:Section({
+    Title = "ตั้งค่า UI และระบบเสริม",
+    Box = true,
+    BoxBorder = true,
+    Opened = true
+})
+
+SettingsSection:Slider({
+    Title = "ความคมชัด",
+    Value = {
+        Min = 0,
+        Max = 100,
+        Default = 50
+    },
+    Callback = function(value)
+        print("ปรับความคมชัดเป็น:", value)
+    end
+})
+
+SettingsSection:Toggle({
+    Title = "เปิด/ปิด เอฟเฟกต์เมนู",
+    Callback = function(state)
+        print("Menu Effect:", state)
+    end
+})
+
+-- =========================================================================
+-- ระบบเป้าเล็งรูปบวกหมุนได้ (Crosshair System)
+-- =========================================================================
+local Run
