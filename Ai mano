@@ -1,0 +1,18 @@
+-- =========================================================================
+-- 🚀 RTS-HUB OFFICIAL LOADER (LOAD FROM EXACT FILE NAME)
+-- =========================================================================
+local rawUrl = ""
+local success, scriptContent = pcall(function()
+    return game:HttpGet(rawUrl)
+end)
+
+if success and scriptContent and not string.find(scriptContent, "404: Not Found") then
+    local runSuccess, err = pcall(function()
+        loadstring(scriptContent)()
+    end)
+    if not runSuccess then
+        warn("เกิดข้อผิดพลาดในการรันสคริปต์: " .. tostring(err))
+    end
+else
+    warn("ไม่สามารถดึงสคริปต์ได้ ตรวจสอบว่า Repository ตั้งค่าเป็น Public หรือยัง")
+end
