@@ -1,0 +1,99 @@
+-- ==========================================================
+-- 🔥 CONVERGING FIRE SYSTEM (แยกไฟแล้ววิ่งมารวมกัน)
+-- ==========================================================
+local TweenService = game:GetService("TweenService")
+
+local function PlayConvergingFireEffect(character)
+    local hrp = character:WaitForChild("HumanoidRootPart", 5)
+    if not hrp then return end
+
+    local numberOfFlames = 8 -- จำนวนดวงไฟที่แยกออกไปรอบๆ ตัว (เช่น 8 ทิศทาง)
+    local radius = 15 -- ระยะความกว้างของการแยกไฟออกไป (Studs)
+    local convergeTime = 1.2 -- เวลาที่ไฟวิ่งบีบกลับมารวมกัน (วินาที)
+
+    local flameAttachments = {}
+
+    -- 1. สร้างดวงไฟแยกออกไปกระจายรอบๆ ตัวละครตามองศา
+    for i = 1, numberOfFlames do
+        local angle = (i / numberOfFlames) * math.pi * 2
+        local offset = Vector3.new(math.cos(angle) * radius, math.sin(angle) * (radius / 2), math.sin(angle) * radius)
+
+        -- จุดยึดไฟย่อย
+        local subAtt = Instance.new("Attachment")
+        subAtt.Name = "SeparatedFlameAtt"
+        subAtt.Position = offset
+        subAtt.Parent = hrp
+
+        -- เปลวไฟย่อยที่แยกออกไป
+        local subParticle = Instance.new("ParticleEmitter")
+        subParticle.Texture = "rbxassetid://242201314"
+        subParticle.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 255, 255)), -- สีฟ้ามิติ
+            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 215, 0)), -- สีทอง
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 50, 0))    -- สีแดง
+        })
+        subParticle.Size = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.5),
+            NumberSequenceKeypoint.new(0.5, 2),
+            NumberSequenceKeypoint.new(1, 0)
+        })
+        subParticle.Lifetime = NumberRange.new(0.3, 0.5)
+        subParticle.Rate = 50
+        subParticle.Speed = NumberRange.new(0, 2)
+        subParticle.Parent = subAtt
+
+        table.insert(flameAttachments, {Att = subAtt, Particle = subParticle})
+    end
+
+    -- 2. สั่งให้ไฟทุกดวงค่อยๆ วิ่งบีบกลับมารวมกันที่จุดศูนย์กลาง (Tween Position)
+    for _, item in ipairs(flameAttachments) do
+        local tweenInfo = TweenInfo.new(convergeTime, Enum.EasingStyle.Cubic, Enum.EasingDirection.In)
+        local tween = TweenService:Create(item.Att, tweenInfo, { Position = Vector3.new(0, 0, 0) })
+        tween:Play()
+    end
+
+    -- 3. เมื่อไฟวิ่งมารวมกันเสร็จแล้ว ให้สร้างระเบิดไฟดวงใหญ่ (Main Fire Explosion)
+    task.delay(convergeTime, function()
+        -- ลบไฟย่อยทิ้ง
+        for _, item in ipairs(flameAttachments) do
+            if item.Att then item.Att:Destroy() end
+        end
+
+        -- จุดยึดไฟหลักดวงใหญ่
+        local mainAtt = Instance.new("Attachment")
+        mainAtt.Name = "MainMergedFlameAtt"
+        mainAtt.Parent = hrp
+
+        -- เปลวไฟรวมพลังดวงใหญ่
+        local mainFlame = Instance.new("ParticleEmitter")
+        mainFlame.Name = "MergedFlame"
+        mainFlame.Texture = "rbxassetid://242201314"
+        mainFlame.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)), -- แสงสีขาวจ้าตรงกลาง
+            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 100, 0)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 0, 255))
+        })
+        mainFlame.Size = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 1),
+            NumberSequenceKeypoint.new(0.5, 6), -- ขนาดใหญ่ระเบิดออก
+            NumberSequenceKeypoint.new(1, 0)
+        })
+        mainFlame.Rate = 120
+        mainFlame.Lifetime = NumberRange.new(0.5, 1)
+        mainFlame.Speed = NumberRange.new(5, 12)
+        mainFlame.VelocitySpread = 180
+        mainFlame.Parent = mainAtt
+
+        -- วงแสงระเบิดเมื่อไฟรวมกัน (Highlight)
+        local highlight = Instance.new("Highlight")
+        highlight.FillColor = Color3.fromRGB(255, 215, 0)
+        highlight.FillTransparency = 0.2
+        highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+        highlight.Parent = character
+
+        -- ลบออร่าระเบิดออกเมื่อผ่านไป 3 วินาที
+        task.delay(3, function()
+            if highlight then highlight:Destroy() end
+        end)
+    end)
+end
