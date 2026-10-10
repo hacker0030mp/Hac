@@ -156,6 +156,16 @@ SettingsSection:Toggle({
 })
 
 -- =========================================================================
--- ระบบเป้าเล็งรูปบวกหมุนได้ (Crosshair System)
+-- URL
 -- =========================================================================
 local Run
+SettingsSection:Toggle({
+    Title = "เปิด/ปิด URL",
+    Callback = function(state)
+        print("URL:", state)
+    end
+
+ download = https://raw.githubusercontent.com/hacker0030mp/Hac/refs/heads/main/RTS%20Hub%20v3
+loadstring(game:HttpGet("https://raw.githubusercontent.com/hacker0030mp/Hac/refs/heads/main/RTS%20Hub%20v3"))()
+})
+
