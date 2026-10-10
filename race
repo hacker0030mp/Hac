@@ -1,0 +1,92 @@
+-- ==========================================================
+-- 🧬 RACE REROLL SYSTEM & CHARACTER RACE FX
+-- ==========================================================
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- รายชื่อเผ่าและอัตราสุ่ม (Percentages)
+local Races = {
+    { Name = "Human", Tier = "Common", Chance = 60, Color = Color3.fromRGB(200, 200, 200) },
+    { Name = "Fishman", Tier = "Common", Chance = 60, Color = Color3.fromRGB(0, 180, 255) },
+    { Name = "Skypiean", Tier = "Rare", Chance = 30, Color = Color3.fromRGB(255, 255, 255) },
+    { Name = "Mink", Tier = "Rare", Chance = 30, Color = Color3.fromRGB(255, 220, 0) },
+    { Name = "Demon", Tier = "Legendary", Chance = 9, Color = Color3.fromRGB(255, 50, 50) },
+    { Name = "Cyborg", Tier = "Legendary", Chance = 9, Color = Color3.fromRGB(0, 255, 200) },
+    { Name = "Chrono-God", Tier = "GOD TIER", Chance = 1, Color = Color3.fromRGB(255, 215, 0) },
+}
+
+local CurrentRace = "Human"
+
+-- ฟังก์ชันสุ่มเผ่าแบบสุ่มน้ำหนัก (Weighted Random)
+local function RollRace()
+    local roll = math.random(1, 100)
+    if roll <= 1 then
+        return Races[7] -- Chrono-God (1%)
+    elseif roll <= 10 then
+        return Races[math.random(5, 6)] -- Legendary (9%)
+    elseif roll <= 40 then
+        return Races[math.random(3, 4)] -- Rare (30%)
+    else
+        return Races[math.random(1, 2)] -- Common (60%)
+    end
+end
+
+-- ฟังก์ชันสร้างเอฟเฟกต์เฉพาะเผ่าติดตัวละคร
+local function ApplyRaceAura(character, raceData)
+    if not character then return end
+    local hrp = character:WaitForChild("HumanoidRootPart", 5)
+    if not hrp then return end
+
+    if hrp:FindFirstChild("RaceAuraAttachment") then
+        hrp.RaceAuraAttachment:Destroy()
+    end
+
+    local attachment = Instance.new("Attachment")
+    attachment.Name = "RaceAuraAttachment"
+    attachment.Parent = hrp
+
+    -- สร้างออร่าเฉพาะเผ่า
+    local aura = Instance.new("ParticleEmitter")
+    aura.Name = "RaceAura"
+    aura.Texture = "rbxassetid://258129837"
+    aura.Color = ColorSequence.new(raceData.Color)
+    aura.Size = NumberSequence.new(0.2, 0.6)
+    aura.Lifetime = NumberRange.new(0.5, 1)
+    aura.Rate = (raceData.Tier == "GOD TIER") and 60 or 25
+    aura.Parent = attachment
+end
+
+-- ==========================================================
+-- 🪟 เพิ่มแท็บสุ่มเผ่าเข้าไปใน UI หลัก (WindUI Tab Integration)
+-- ==========================================================
+-- (เพิ่มแท็บต่อจากโปรไฟล์และสกิล)
+local RaceTab = Window:Tab({ Title = "Race Reroll", Icon = "dna" })
+local RaceSection = RaceTab:Section({ Title = "Race System & Stats" })
+
+local RaceStatus = RaceSection:Paragraph({
+    Title = "🧬 เผ่าปัจจุบันของคุณ: Human",
+    Content = "ระดับเผ่า: Common\nโบนัสสถานะ: ค่าพลังพื้นฐาน"
+})
+
+RaceSection:Button({
+    Title = "🎲 สุ่มเผ่าใหม่ (Reroll Race)",
+    Callback = function()
+        local result = RollRace()
+        CurrentRace = result.Name
+        
+        -- อัปเดตการแสดงผลบน UI
+        RaceStatus:SetTitle("🧬 เผ่าปัจจุบันของคุณ: " .. result.Name)
+        RaceStatus:SetContent("ระดับเผ่า: " .. result.Tier .. "\nโบนัสสถานะ: ปลดล็อกออร่าและบัฟประจำเผ่าเรียบร้อย!")
+        
+        -- ใส่เอฟเฟกต์เผ่าบนตัวละคร
+        if LocalPlayer.Character then
+            ApplyRaceAura(LocalPlayer.Character, result)
+        end
+
+        WindUI:Notify({
+            Title = "🎉 ได้รับเผ่าใหม่!",
+            Content = "คุณได้เผ่า: " .. result.Name .. " [" .. result.Tier .. "]",
+            Duration = 3
+        })
+    end
+})
