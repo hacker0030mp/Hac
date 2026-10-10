@@ -1,0 +1,19 @@
+-- =========================================================================
+-- 🚀 RTS-HUB OFFICIAL LOADER (LOAD FROM EXACT FILE NAME)
+-- =========================================================================
+local rawUrl = "https://raw.githubusercontent.com/hacker0030mp/RTS-HUB.github.oi/refs/heads/main/RTS-HUB%20(AI%20Assistant%20%26%20Smart%20Hub%20System)?token=GHSAT0AAAAAAELJNAMEXQWVY34K3K7U5MNO2WKOBTA"
+
+local success, scriptContent = pcall(function()
+    return game:HttpGet(rawUrl)
+end)
+
+if success and scriptContent and not string.find(scriptContent, "404: Not Found") then
+    local runSuccess, err = pcall(function()
+        loadstring(scriptContent)()
+    end)
+    if not runSuccess then
+        warn("เกิดข้อผิดพลาดในการรันสคริปต์: " .. tostring(err))
+    end
+else
+    warn("ไม่สามารถดึงสคริปต์ได้ ตรวจสอบว่า Repository ตั้งค่าเป็น Public หรือยัง")
+end
