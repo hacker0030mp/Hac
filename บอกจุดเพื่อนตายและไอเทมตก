@@ -1,0 +1,257 @@
+-- ==========================================================
+-- 🚀 MINH KHA HUB (MINI GUI + DEATH MARKER & ITEM TRACKER)
+-- ==========================================================
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local CoreGui = game:GetService("CoreGui")
+local RunService = game:GetService("RunService")
+
+-- สถานะของสวิตช์เปิด-ปิด
+local DeathMarkersEnabled = false
+local ItemTrackerEnabled = false
+
+-- ==========================================================
+-- 🎨 1. สร้างหน้าต่างขนาดเล็ก (Mini Floating GUI)
+-- ==========================================================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "MinhKhaHubMiniTracker"
+ScreenGui.ResetOnSpawn = false
+
+if syn and syn.protect_gui then
+    syn.protect_gui(ScreenGui)
+    ScreenGui.Parent = CoreGui
+elseif gethui then
+    ScreenGui.Parent = gethui()
+else
+    ScreenGui.Parent = CoreGui
+end
+
+local MiniFrame = Instance.new("Frame")
+MiniFrame.Name = "MainFrame"
+MiniFrame.Size = UDim2.new(0, 200, 0, 130)
+MiniFrame.Position = UDim2.new(0.05, 0, 0.2, 0)
+MiniFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+MiniFrame.BorderSizePixel = 0
+MiniFrame.Active = true
+MiniFrame.Draggable = true -- สามารถลากเปลี่ยนตำแหน่งหน้าต่างบนหน้าจอได้
+MiniFrame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.Parent = MiniFrame
+
+-- หัวข้อฮับ
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Size = UDim2.new(1, 0, 0, 28)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Text = "Minh Kha Hub • Tracker"
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.TextSize = 13
+TitleLabel.Font = Enum.Font.SourceSansBold
+TitleLabel.Parent = MiniFrame
+
+-- 1.1 ปุ่มสวิตช์จุดเพื่อนตาย
+local DeathToggleBtn = Instance.new("TextButton")
+DeathToggleBtn.Size = UDim2.new(0.9, 0, 0, 32)
+DeathToggleBtn.Position = UDim2.new(0.05, 0, 0.28, 0)
+DeathToggleBtn.BackgroundColor3 = Color3.fromRGB(180, 50, 50) -- สีแดง (OFF)
+DeathToggleBtn.Text = "💀 จุดเพื่อนตาย: OFF"
+DeathToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+DeathToggleBtn.TextSize = 12
+DeathToggleBtn.Font = Enum.Font.SourceSansBold
+DeathToggleBtn.Parent = MiniFrame
+
+local BtnCorner1 = Instance.new("UICorner")
+BtnCorner1.CornerRadius = UDim.new(0, 6)
+BtnCorner1.Parent = DeathToggleBtn
+
+-- 1.2 ปุ่มสวิตช์ค้นหาไอเทมที่ตกพื้น
+local ItemToggleBtn = Instance.new("TextButton")
+ItemToggleBtn.Size = UDim2.new(0.9, 0, 0, 32)
+ItemToggleBtn.Position = UDim2.new(0.05, 0, 0.62, 0)
+ItemToggleBtn.BackgroundColor3 = Color3.fromRGB(180, 50, 50) -- สีแดง (OFF)
+ItemToggleBtn.Text = "💎 ไอเทมตกพื้น: OFF"
+ItemToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ItemToggleBtn.TextSize = 12
+ItemToggleBtn.Font = Enum.Font.SourceSansBold
+ItemToggleBtn.Parent = MiniFrame
+
+local BtnCorner2 = Instance.new("UICorner")
+BtnCorner2.CornerRadius = UDim.new(0, 6)
+BtnCorner2.Parent = ItemToggleBtn
+
+-- ==========================================================
+-- 💀 2. ระบบเช็คและแสดงจุดเพื่อนตาย + ระยะทาง
+-- ==========================================================
+local function createDeathMarker(character, playerName)
+    if not DeathMarkersEnabled then return end
+    local humanoidRootPart = character:WaitForChild("HumanoidRootPart", 5)
+    if not humanoidRootPart then return end
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "DeathMarkerGui"
+    billboard.Size = UDim2.new(0, 200, 0, 50)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
+    billboard.AlwaysOnTop = true
+
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.TextColor3 = Color3.fromRGB(255, 60, 60)
+    textLabel.TextStrokeTransparency = 0
+    textLabel.TextSize = 14
+    textLabel.Font = Enum.Font.SourceSansBold
+    textLabel.Parent = billboard
+
+    billboard.Adornee = humanoidRootPart
+    billboard.Parent = workspace
+
+    local connection
+    connection = RunService.RenderStepped:Connect(function()
+        if not DeathMarkersEnabled or not character or not humanoidRootPart or not humanoidRootPart.Parent then
+            billboard:Destroy()
+            connection:Disconnect()
+            return
+        end
+
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            local dist = (LocalPlayer.Character.HumanoidRootPart.Position - humanoidRootPart.Position).Magnitude
+            textLabel.Text = "💀 " .. playerName .. " เสียชีวิตแล้ว!\n[ " .. math.floor(dist) .. " เมตร ]"
+        else
+            textLabel.Text = "💀 " .. playerName .. " เสียชีวิตแล้ว!"
+        end
+    end)
+
+    task.delay(30, function()
+        if billboard then billboard:Destroy() end
+        if connection then connection:Disconnect() end
+    end)
+end
+
+local function monitorPlayer(player)
+    if player == LocalPlayer then return end
+    player.CharacterAdded:Connect(function(character)
+        local humanoid = character:WaitForChild("Humanoid", 5)
+        if humanoid then
+            humanoid.Died:Connect(function()
+                createDeathMarker(character, player.Name)
+            end)
+        end
+    end)
+
+    if player.Character then
+        local humanoid = player.Character:FindFirstChild("Humanoid")
+        if humanoid then
+            humanoid.Died:Connect(function()
+                createDeathMarker(player.Character, player.Name)
+            end)
+        end
+    end
+end
+
+for _, player in ipairs(Players:GetPlayers()) do monitorPlayer(player) end
+Players.PlayerAdded:Connect(monitorPlayer)
+
+-- ==========================================================
+-- 💎 3. ระบบแสดงชื่อไอเทมที่ตกพื้น + บอกระยะทาง
+-- ==========================================================
+local activeItemGuis = {}
+
+local function createItemMarker(itemObj)
+    if not itemObj:IsA("BasePart") and not itemObj:IsA("Model") and not itemObj:IsA("Tool") then return end
+    
+    local targetPart = itemObj:IsA("BasePart") and itemObj or itemObj:FindFirstChildWhichIsA("BasePart")
+    if not targetPart or targetPart:FindFirstChild("ItemMarkerGui") then return end
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "ItemMarkerGui"
+    billboard.Size = UDim2.new(0, 200, 0, 40)
+    billboard.StudsOffset = Vector3.new(0, 2, 0)
+    billboard.AlwaysOnTop = true
+
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.TextColor3 = Color3.fromRGB(255, 215, 0) -- สีทองสำหรับไอเทม
+    textLabel.TextStrokeTransparency = 0
+    textLabel.TextSize = 13
+    textLabel.Font = Enum.Font.SourceSansBold
+    textLabel.Parent = billboard
+
+    billboard.Adornee = targetPart
+    billboard.Parent = targetPart
+    table.insert(activeItemGuis, billboard)
+
+    local connection
+    connection = RunService.RenderStepped:Connect(function()
+        if not ItemTrackerEnabled or not itemObj or not itemObj.Parent or not targetPart then
+            billboard:Destroy()
+            connection:Disconnect()
+            return
+        end
+
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            local dist = (LocalPlayer.Character.HumanoidRootPart.Position - targetPart.Position).Magnitude
+            textLabel.Text = "💎 " .. itemObj.Name .. "\n[ " .. math.floor(dist) .. " เมตร ]"
+        end
+    end)
+end
+
+-- สแกนค้นหาไอเทมใน Workspace
+local function scanItems()
+    if not ItemTrackerEnabled then return end
+    -- ค้นหาไอเทมที่อยู่ใน Folder แรร์/ของดรอป หรือใน Workspace ทั่วไป
+    for _, v in ipairs(workspace:GetChildren()) do
+        if v:IsA("Tool") or v:IsA("Model") or (v:IsA("BasePart") and v.Name:lower():find("item")) or v:FindFirstChild("Handle") then
+            if not Players:GetPlayerFromCharacter(v) then -- เช็คว่าไม่ใช่ตัวละครของผู้เล่น
+                createItemMarker(v)
+            end
+        end
+    end
+end
+
+workspace.ChildAdded:Connect(function(child)
+    if ItemTrackerEnabled then
+        task.wait(0.2)
+        if child:IsA("Tool") or child:IsA("Model") or child:FindFirstChild("Handle") then
+            if not Players:GetPlayerFromCharacter(child) then
+                createItemMarker(child)
+            end
+        end
+    end
+end)
+
+-- ==========================================================
+-- 🕹️ 4. สวิตช์ปุ่มกดทำงาน (Toggle Event Handlers)
+-- ==========================================================
+
+-- กดปุ่มจุดเพื่อนตาย
+DeathToggleBtn.MouseButton1Click:Connect(function()
+    DeathMarkersEnabled = not DeathMarkersEnabled
+    if DeathMarkersEnabled then
+        DeathToggleBtn.BackgroundColor3 = Color3.fromRGB(50, 180, 80) -- สีเขียว (ON)
+        DeathToggleBtn.Text = "💀 จุดเพื่อนตาย: ON"
+    else
+        DeathToggleBtn.BackgroundColor3 = Color3.fromRGB(180, 50, 50) -- สีแดง (OFF)
+        DeathToggleBtn.Text = "💀 จุดเพื่อนตาย: OFF"
+    end
+end)
+
+-- กดปุ่มค้นหาไอเทม
+ItemToggleBtn.MouseButton1Click:Connect(function()
+    ItemTrackerEnabled = not ItemTrackerEnabled
+    if ItemTrackerEnabled then
+        ItemToggleBtn.BackgroundColor3 = Color3.fromRGB(50, 180, 80) -- สีเขียว (ON)
+        ItemToggleBtn.Text = "💎 ไอเทมตกพื้น: ON"
+        scanItems()
+    else
+        ItemToggleBtn.BackgroundColor3 = Color3.fromRGB(180, 50, 50) -- สีแดง (OFF)
+        ItemToggleBtn.Text = "💎 ไอเทมตกพื้น: OFF"
+        
+        -- ลบป้ายบอกไอเทมทั้งหมดออกเมื่อปิดสวิตช์
+        for _, gui in ipairs(activeItemGuis) do
+            if gui and gui.Parent then gui:Destroy() end
+        end
+        activeItemGuis = {}
+    end
+end)
