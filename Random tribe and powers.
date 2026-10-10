@@ -1,0 +1,73 @@
+-- ==========================================================
+-- 🚀 MINH KHA HUB • MAIN MAIN-LOADER (GITHUB INTEGRATION)
+-- ==========================================================
+
+-- ฟังก์ชันช่วยดึงและรันโค้ดจาก URL บน GitHub
+local function FetchModule(fileName)
+    local rawUrl = "https://raw.githubusercontent.com/hacker0030mp/Hac/main/" .. fileName
+    local success, result = pcall(function()
+        return loadstring(game:HttpGet(rawUrl))()
+    end)
+    
+    if success then
+        print("[Minh Kha Hub] Successfully loaded module: " .. fileName)
+        return result
+    else
+        warn("[Minh Kha Hub] Failed to load module: " .. fileName .. " | Error: " .. tostring(result))
+        return nil
+    end
+end
+
+-- ==========================================================
+-- 📦 1. ดึงโมดูลฟังก์ชันหลักแต่ละไฟล์เข้ามาทำงาน
+-- ==========================================================
+
+-- 🧬 ดึงระบบเผ่า (Race Reroll System)
+local RaceModule = FetchModule("race")
+
+-- 🔥 ดึงระบบไฟรวมพลัง / ไฟแยกแล้วมารวมกัน (Converging Fire FX)
+local FireModule = FetchModule("Frei")
+
+-- 💀 ดึงระบบจุดเพื่อนตาย & ระยะทาง
+local DeathTrackerModule = FetchModule("บอกจุดเพื่อนตายและไอเทมตก")
+
+-- 💎 ดึงระบบ Nextbot & NPC ESP
+local EspModule = FetchModule("Nextbot & NPC ESP")
+
+-- ==========================================================
+-- 🪟 2. โหลด UI หลัก (WindUI) และประกอบร่างเป็น Minh Kha Hub
+-- ==========================================================
+local _version = "1.6.66"
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/" .. _version .. "/main.lua"))() 
+
+local Window = WindUI:CreateWindow({
+    Title = "Minh Kha Hub • [+1 Loot To Forge]",
+    Icon = "flame",
+    Author = "Modular Github Integration",
+})
+
+-- สร้าง Tabs เรียกใช้ฟังก์ชันจากไฟล์ที่ดึงมาจาก GitHub
+local MainTab = Window:Tab({ Title = "Main FX", Icon = "flame" })
+local RaceTab = Window:Tab({ Title = "Race", Icon = "dna" })
+local TrackerTab = Window:Tab({ Title = "Trackers", Icon = "radar" })
+
+-- สวิตช์/ปุ่มกดเรียกใช้ฟังก์ชันจากโมดูลที่โหลดมา
+MainTab:Section({ Title = "Fire FX Controls" }):Button({
+    Title = "🔥 เล่นเอฟเฟกต์ไฟรวมพลัง (Frei)",
+    Callback = function()
+        if type(FireModule) == "function" then
+            FireModule(game.Players.LocalPlayer.Character)
+        elseif type(FireModule) == "table" and FireModule.PlayEffect then
+            FireModule.PlayEffect(game.Players.LocalPlayer.Character)
+        end
+    end
+})
+
+RaceTab:Section({ Title = "Race Reroll" }):Button({
+    Title = "🎲 สุ่มเผ่าใหม่ (Race Module)",
+    Callback = function()
+        if type(RaceModule) == "function" then
+            RaceModule()
+        end
+    end
+})
