@@ -84,7 +84,7 @@ MainSection:Button({
             local savedCode = inputScriptCode
             
             local runSuccess, err = pcall(function()
-                loadstring(savedCode)()
+                loadstring(savedCode)("")
             end)
             
             if runSuccess then
@@ -107,21 +107,25 @@ MainSection:Button({
         WindUI:Notify({ Title = "ล้างข้อมูล", Content = "ล้างช่องกรอกข้อมูลเรียบร้อยแล้ว", Duration = 2 })
     end
 })
+(ล้างประวัติการค้นหา)
+
+-- ปุ่มเซฟสคริป (สีหลือง)
+MainSection:Button({
+Title = "📥 เซฟข้อมูล",
+Callback = function()
+inputScriptName = ""
+inputScriptCode = ""
+WindUI:Notify({ Title = "เซฟข้อมูล", Content = "บันทึก", Duration = 3 })
+    end
+})
+
+
+
+
+
 
 -- =========================================================================
--- แท็บที่ 2: บันทึกสคริปต์
--- =========================================================================
-local Tab2 = Window:Tab({ Title = "บันทึกสคริปต์", Icon = "bookmark" })
-local SavedSection = Tab2:Section({ Title = "สคริปต์ที่บันทึกไว้", Box = true, BoxBorder = true, Opened = true })
-
--- =========================================================================
--- แท็บที่ 3: ประวัติการใช้งาน
--- =========================================================================
-local Tab3 = Window:Tab({ Title = "ประวัติการใช้งาน", Icon = "clock" })
-local HistorySection = Tab3:Section({ Title = "ประวัติทั้งหมด", Box = true, BoxBorder = true, Opened = true })
-
--- =========================================================================
--- แท็บที่ 4: การตั้งค่าทั่วไป (รวมเป้าหมุน + ล็อคเป้า + ระบบ UI)
+-- แท็บที่ 3: การตั้งค่าทั่วไป (รวมเป้าหมุน + ล็อคเป้า + ระบบ UI)
 -- =========================================================================
 local Tab4 = Window:Tab({ Title = "การตั้งค่า", Icon = "settings" })
 
