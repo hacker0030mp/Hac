@@ -106,8 +106,9 @@ MainSection:Button({
         inputScriptCode = ""
         WindUI:Notify({ Title = "ล้างข้อมูล", Content = "ล้างช่องกรอกข้อมูลเรียบร้อยแล้ว", Duration = 2 })
     end
+WindUI:Notify({ Title = "ล้างข้อมูล", Content = "ล้างช่องกรอกข้อมูลเรียบร้อยแล้ว", Duration = 2 })
+    end
 })
-(ล้างประวัติการค้นหา)
 -- ==========================================================
 -- ⚙️ ตัวอย่างการใช้งานปุ่มล้างข้อมูล (Clear Input / Data) ใน WindUI
 -- ==========================================================
@@ -141,6 +142,9 @@ SettingsSection:Button({
     end
 })
 
+})
+
+
 
 -- ปุ่มเซฟสคริป (สีหลือง)
 MainSection:Button({
@@ -150,6 +154,118 @@ inputScriptName = ""
 inputScriptCode = ""
 WindUI:Notify({ Title = "เซฟข้อมูล", Content = "บันทึก", Duration = 3 })
     end
+-- ==========================================================
+-- 💾 SYSTEM AUTO SAVE & LOAD FOR WINDUI
+-- ==========================================================
+local HttpService = game:GetService("HttpService")
+
+-- โครงสร้างตารางเก็บข้อมูลที่จะบันทึก
+local SaveFileName = "MinhKhaHub_Config.json"
+local ConfigData = {
+    SavedInputText = "",
+    AutoSaveEnabled = true,
+}
+
+-- 1. ฟังก์ชันโหลดข้อมูลที่เคยบันทึกไว้
+local function LoadConfig()
+    if isfile and isfile(SaveFileName) then
+        local success, result = pcall(function()
+            return HttpService:JSONDecode(readfile(SaveFileName))
+        end)
+        if success and type(result) == "table" then
+            for key, value in pairs(result) do
+                ConfigData[key] = value
+            end
+            print("[Minh Kha Hub] Load config successfully!")
+        end
+    end
+end
+
+-- 2. ฟังก์ชันบันทึกข้อมูลลงไฟล์
+local function SaveConfig()
+    if writefile then
+        local success, err = pcall(function()
+            writefile(SaveFileName, HttpService:JSONEncode(ConfigData))
+        end)
+        if success then
+            print("[Minh Kha Hub] Auto Saved Config!")
+        else
+            warn("[Minh Kha Hub] Save failed: " .. tostring(err))
+        end
+    end
+end
+
+-- โหลดข้อมูลตั้งต้นก่อนสร้าง UI
+LoadConfig()
+
+-- ==========================================================
+-- ⚙️ หน้าต่างตั้งค่า (Settings & Utilities)
+-- ==========================================================
+local SettingsTab = Window:Tab({ Title = "Settings", Icon = "settings" })
+local SettingsSection = SettingsTab:Section({ Title = "Utilities & Config" })
+
+-- ช่องกรอกข้อมูล (พร้อมโหลดค่าที่เคยบันทึกไว้อัตโนมัติ)
+local InputBox = SettingsSection:Input({
+    Title = "กรอกข้อมูล / คีย์สคริปต์",
+    Default = ConfigData.SavedInputText,
+    Placeholder = "พิมพ์ข้อความที่นี่...",
+    Callback = function(text)
+        ConfigData.SavedInputText = text
+        if ConfigData.AutoSaveEnabled then
+            SaveConfig() -- บันทึกทันทีเมื่อมีการพิมพ์/เปลี่ยนข้อความ
+        end
+    end
+})
+
+-- สวิตช์ เปิด-ปิด ระบบ Auto Save
+SettingsSection:Toggle({
+    Title = "💾 ระบบบันทึกอัตโนมัติ (Auto Save)",
+    Default = ConfigData.AutoSaveEnabled,
+    Callback = function(state)
+        ConfigData.AutoSaveEnabled = state
+        SaveConfig()
+        WindUI:Notify({
+            Title = "Auto Save",
+            Content = state and "เปิดระบบบันทึกอัตโนมัติแล้ว" or "ปิดระบบบันทึกอัตโนมัติแล้ว",
+            Duration = 2
+        })
+    end
+})
+
+-- ปุ่มล้างข้อมูล + บันทึกการล้างข้อมูลลงไฟล์
+SettingsSection:Button({
+    Title = "🧹 ล้างข้อมูลช่องกรอก",
+    Callback = function()
+        -- ล้างค่าบน UI
+        if InputBox and InputBox.SetText then
+            InputBox:SetText("")
+        end
+        
+        -- ล้างค่าในข้อมูลบันทึก
+        ConfigData.SavedInputText = ""
+        SaveConfig()
+
+        WindUI:Notify({ 
+            Title = "ล้างข้อมูล", 
+            Content = "ล้างช่องกรอกข้อมูลเรียบร้อยแล้ว", 
+            Duration = 2 
+        })
+    end
+})
+
+-- ปุ่มกดบันทึกด้วยตัวเอง (Manual Save Button)
+SettingsSection:Button({
+    Title = "💾 บันทึกตั้งค่าด้วยตัวเอง (Save Manual)",
+    Callback = function()
+        SaveConfig()
+        WindUI:Notify({
+            Title = "บันทึกสำเร็จ",
+            Content = "บันทึกการตั้งค่าลงไฟล์เรียบร้อยแล้ว",
+            Duration = 2
+        })
+    end
+})
+
 })
 
 
