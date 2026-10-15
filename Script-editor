@@ -1,5 +1,5 @@
 -- ========================================================
--- Delta Script Hub - Compact UI (Minimizable & Draggable)
+-- Delta Script Hub - Updated Settings & ESP System
 -- ========================================================
 
 local DeltaScriptHub = {
@@ -44,7 +44,7 @@ local DeltaScriptHub = {
 }
 
 -- ========================================================
--- [ ส่วนสร้างหน้าต่างหลัก UI (Compact Size) ]
+-- [ ส่วนสร้างหน้าต่างหลัก UI ]
 -- ========================================================
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
@@ -59,7 +59,6 @@ ScreenGui.Name = "DeltaMultiUI"
 ScreenGui.Parent = CoreGui
 _G.DeltaMultiInstance = ScreenGui
 
--- ปรับขนาดหน้าต่างหลักให้เล็กลง (กว้าง 400, สูง 410)
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(0, 400, 0, 410)
@@ -69,7 +68,6 @@ MainFrame.BorderSizePixel = 0
 MainFrame.Parent = ScreenGui
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
 
--- แถบหัวข้อหลัก
 local TopBar = Instance.new("Frame")
 TopBar.Size = UDim2.new(1, 0, 0, 30)
 TopBar.BackgroundColor3 = Color3.fromRGB(32, 32, 40)
@@ -88,7 +86,6 @@ TitleLabel.Font = Enum.Font.GothamBold
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 TitleLabel.Parent = TopBar
 
--- ปุ่มปิดหน้าต่าง (ย่อ)
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Size = UDim2.new(0, 24, 0, 24)
 CloseBtn.Position = UDim2.new(1, -27, 0, 3)
@@ -100,7 +97,6 @@ CloseBtn.Font = Enum.Font.GothamBold
 CloseBtn.Parent = TopBar
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 5)
 
--- ปุ่มย่อหน้าต่าง (Mini Floating Button)
 local MiniButton = Instance.new("TextButton")
 MiniButton.Name = "MiniButton"
 MiniButton.Size = UDim2.new(0, 45, 0, 45)
@@ -123,7 +119,6 @@ MiniButton.MouseButton1Click:Connect(function()
     MiniButton.Visible = false
 end)
 
--- ฟังก์ชันลากเลื่อนหน้าต่าง (Draggable)
 local function MakeDraggable(guiObject)
     local dragging, dragInput, dragStart, startPos
     guiObject.InputBegan:Connect(function(input)
@@ -151,9 +146,6 @@ end
 MakeDraggable(MainFrame)
 MakeDraggable(MiniButton)
 
-----------------------------------------------------------------
--- พื้นที่เนื้อหา: องค์ประกอบขนาดกะทัดรัด
-----------------------------------------------------------------
 local Container = Instance.new("ScrollingFrame")
 Container.Size = UDim2.new(1, -12, 1, -38)
 Container.Position = UDim2.new(0, 6, 0, 34)
@@ -162,7 +154,7 @@ Container.BorderSizePixel = 0
 Container.ScrollBarThickness = 3
 Container.Parent = MainFrame
 
--- 1. ช่องสี่เหลี่ยมช่องใหญ่
+-- ช่องที่ 1 (หลัก)
 local BigBox = Instance.new("TextBox")
 BigBox.Size = UDim2.new(1, 0, 0, 100)
 BigBox.Position = UDim2.new(0, 0, 0, 5)
@@ -178,12 +170,11 @@ BigBox.TextXAlignment = Enum.TextXAlignment.Left
 BigBox.TextYAlignment = Enum.TextYAlignment.Top
 BigBox.Parent = Container
 Instance.new("UICorner", BigBox).CornerRadius = UDim.new(0, 6)
-
 BigBox:GetPropertyChangedSignal("Text"):Connect(function()
     DeltaScriptHub.Editor:SetScript1(BigBox.Text)
 end)
 
--- 2. แยกเป็น 2 ช่องสี่เหลี่ยมย่อยด้านล่าง
+-- ช่องย่อย 2 และ 3
 local SubBox1 = Instance.new("TextBox")
 SubBox1.Size = UDim2.new(0.48, 0, 0, 65)
 SubBox1.Position = UDim2.new(0, 0, 0, 112)
@@ -199,7 +190,6 @@ SubBox1.TextXAlignment = Enum.TextXAlignment.Left
 SubBox1.TextYAlignment = Enum.TextYAlignment.Top
 SubBox1.Parent = Container
 Instance.new("UICorner", SubBox1).CornerRadius = UDim.new(0, 6)
-
 SubBox1:GetPropertyChangedSignal("Text"):Connect(function()
     DeltaScriptHub.Editor:SetScript2(SubBox1.Text)
 end)
@@ -219,12 +209,11 @@ SubBox2.TextXAlignment = Enum.TextXAlignment.Left
 SubBox2.TextYAlignment = Enum.TextYAlignment.Top
 SubBox2.Parent = Container
 Instance.new("UICorner", SubBox2).CornerRadius = UDim.new(0, 6)
-
 SubBox2:GetPropertyChangedSignal("Text"):Connect(function()
     DeltaScriptHub.Editor:SetScript3(SubBox2.Text)
 end)
 
--- 3. ด้านซ้ายปุ่ม Run | ด้านขวาปุ่ม AutoRun
+-- ปุ่ม Run และ AutoRun
 local RunBtn = Instance.new("TextButton")
 RunBtn.Size = UDim2.new(0.48, 0, 0, 30)
 RunBtn.Position = UDim2.new(0, 0, 0, 184)
@@ -234,175 +223,3 @@ RunBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 RunBtn.Font = Enum.Font.GothamBold
 RunBtn.TextSize = 11
 RunBtn.Parent = Container
-Instance.new("UICorner", RunBtn).CornerRadius = UDim.new(0, 5)
-RunBtn.MouseButton1Click:Connect(function()
-    DeltaScriptHub.Editor:RunScript(1)
-end)
-
-local AutoRunBtn = Instance.new("TextButton")
-AutoRunBtn.Size = UDim2.new(0.48, 0, 0, 30)
-AutoRunBtn.Position = UDim2.new(0.52, 0, 0, 184)
-AutoRunBtn.BackgroundColor3 = Color3.fromRGB(180, 120, 50)
-AutoRunBtn.Text = "🔄 AutoRun: OFF"
-AutoRunBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-AutoRunBtn.Font = Enum.Font.GothamBold
-AutoRunBtn.TextSize = 11
-AutoRunBtn.Parent = Container
-Instance.new("UICorner", AutoRunBtn).CornerRadius = UDim.new(0, 5)
-
-local autoState = false
-AutoRunBtn.MouseButton1Click:Connect(function()
-    autoState = not autoState
-    AutoRunBtn.Text = "🔄 AutoRun: " .. (autoState and "ON" or "OFF")
-    AutoRunBtn.BackgroundColor3 = autoState and Color3.fromRGB(50, 180, 90) or Color3.fromRGB(180, 120, 50)
-    DeltaScriptHub.Editor:AutoRunScript(autoState)
-end)
-
-----------------------------------------------------------------
--- 4. ส่วนที่ 3: ปุ่ม "เปิดอีกหน้าต่าง" (รอ 1 นาที)
-----------------------------------------------------------------
-local OpenSecondWinBtn = Instance.new("TextButton")
-OpenSecondWinBtn.Size = UDim2.new(1, 0, 0, 35)
-OpenSecondWinBtn.Position = UDim2.new(0, 0, 0, 222)
-OpenSecondWinBtn.BackgroundColor3 = Color3.fromRGB(70, 100, 200)
-OpenSecondWinBtn.Text = "📂 เปิดอีกหน้าต่าง (รอ 1 นาที)"
-OpenSecondWinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-OpenSecondWinBtn.Font = Enum.Font.GothamBold
-OpenSecondWinBtn.TextSize = 11
-OpenSecondWinBtn.Parent = Container
-Instance.new("UICorner", OpenSecondWinBtn).CornerRadius = UDim.new(0, 6)
-
-local function CreateSecondWindow()
-    if CoreGui:FindFirstChild("DeltaSecondUI") then
-        CoreGui.DeltaSecondUI:Destroy()
-    end
-
-    local SecGui = Instance.new("ScreenGui")
-    SecGui.Name = "DeltaSecondUI"
-    SecGui.Parent = CoreGui
-
-    local SecFrame = Instance.new("Frame")
-    SecFrame.Size = UDim2.new(0, 380, 0, 220)
-    SecFrame.Position = UDim2.new(0.5, -190, 0.3, 0)
-    SecFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
-    SecFrame.Parent = SecGui
-    Instance.new("UICorner", SecFrame).CornerRadius = UDim.new(0, 8)
-    MakeDraggable(SecFrame)
-
-    local SecTop = Instance.new("Frame")
-    SecTop.Size = UDim2.new(1, 0, 0, 28)
-    SecTop.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-    SecTop.Parent = SecFrame
-    Instance.new("UICorner", SecTop).CornerRadius = UDim.new(0, 8)
-
-    local SecTitle = Instance.new("TextLabel")
-    SecTitle.Size = UDim2.new(1, -20, 1, 0)
-    SecTitle.Position = UDim2.new(0, 8, 0, 0)
-    SecTitle.BackgroundTransparency = 1
-    SecTitle.Text = "Advanced Functions"
-    SecTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    SecTitle.TextSize = 12
-    SecTitle.Font = Enum.Font.GothamBold
-    SecTitle.Parent = SecTop
-
-    local SecClose = Instance.new("TextButton")
-    SecClose.Size = UDim2.new(0, 22, 0, 22)
-    SecClose.Position = UDim2.new(1, -25, 0, 3)
-    SecClose.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
-    SecClose.Text = "X"
-    SecClose.TextColor3 = Color3.fromRGB(255, 255, 255)
-    SecClose.TextSize = 11
-    SecClose.Parent = SecTop
-    Instance.new("UICorner", SecClose).CornerRadius = UDim.new(0, 4)
-    SecClose.MouseButton1Click:Connect(function() SecGui:Destroy() end)
-
-    -- หมวดหมู่ที่ 2 (ฝั่งซ้าย)
-    local Cat2Frame = Instance.new("Frame")
-    Cat2Frame.Size = UDim2.new(0.48, 0, 1, -38)
-    Cat2Frame.Position = UDim2.new(0, 6, 0, 32)
-    Cat2Frame.BackgroundColor3 = Color3.fromRGB(32, 32, 42)
-    Cat2Frame.Parent = SecFrame
-    Instance.new("UICorner", Cat2Frame).CornerRadius = UDim.new(0, 6)
-
-    local Cat2Title = Instance.new("TextLabel")
-    Cat2Title.Size = UDim2.new(1, 0, 0, 25)
-    Cat2Title.BackgroundTransparency = 1
-    Cat2Title.Text = "📂 หมวดที่ 2 (ซ้าย)"
-    Cat2Title.TextColor3 = Color3.fromRGB(100, 200, 255)
-    Cat2Title.Font = Enum.Font.GothamBold
-    Cat2Title.TextSize = 11
-    Cat2Title.Parent = Cat2Frame
-
-    local BtnCat2 = Instance.new("TextButton")
-    BtnCat2.Size = UDim2.new(1, -12, 0, 35)
-    BtnCat2.Position = UDim2.new(0, 6, 0, 30)
-    BtnCat2.BackgroundColor3 = Color3.fromRGB(50, 120, 180)
-    BtnCat2.Text = "รันฟังก์ชัน 2"
-    BtnCat2.TextColor3 = Color3.fromRGB(255, 255, 255)
-    BtnCat2.Font = Enum.Font.GothamBold
-    BtnCat2.TextSize = 11
-    BtnCat2.Parent = Cat2Frame
-    Instance.new("UICorner", BtnCat2).CornerRadius = UDim.new(0, 5)
-    BtnCat2.MouseButton1Click:Connect(function()
-        print("[Category 2] ทำงานเรียบร้อย")
-    end)
-
-    -- หมวดหมู่ที่ 3 (ฝั่งขวา)
-    local Cat3Frame = Instance.new("Frame")
-    Cat3Frame.Size = UDim2.new(0.48, 0, 1, -38)
-    Cat3Frame.Position = UDim2.new(0.51, 0, 0, 32)
-    Cat3Frame.BackgroundColor3 = Color3.fromRGB(32, 32, 42)
-    Cat3Frame.Parent = SecFrame
-    Instance.new("UICorner", Cat3Frame).CornerRadius = UDim.new(0, 6)
-
-    local Cat3Title = Instance.new("TextLabel")
-    Cat3Title.Size = UDim2.new(1, 0, 0, 25)
-    Cat3Title.BackgroundTransparency = 1
-    Cat3Title.Text = "⚙️ หมวดที่ 3 (ขวา)"
-    Cat3Title.TextColor3 = Color3.fromRGB(255, 180, 100)
-    Cat3Title.Font = Enum.Font.GothamBold
-    Cat3Title.TextSize = 11
-    Cat3Title.Parent = Cat3Frame
-
-    local BtnCat3 = Instance.new("TextButton")
-    BtnCat3.Size = UDim2.new(1, -12, 0, 35)
-    BtnCat3.Position = UDim2.new(0, 6, 0, 30)
-    BtnCat3.BackgroundColor3 = Color3.fromRGB(180, 100, 50)
-    BtnCat3.Text = "รันฟังก์ชัน 3"
-    BtnCat3.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Cat3Title.Font = Enum.Font.GothamBold
-    BtnCat3.Font = Enum.Font.GothamBold
-    BtnCat3.TextSize = 11
-    BtnCat3.Parent = Cat3Frame
-    Instance.new("UICorner", BtnCat3).CornerRadius = UDim.new(0, 5)
-    BtnCat3.MouseButton1Click:Connect(function()
-        print("[Category 3] ทำงานเรียบร้อย")
-    end)
-end
-
-local isWaiting = false
-OpenSecondWinBtn.MouseButton1Click:Connect(function()
-    if isWaiting then return end
-    isWaiting = true
-    
-    local countdown = 60
-    OpenSecondWinBtn.BackgroundColor3 = Color3.fromRGB(120, 120, 120)
-    
-    task.spawn(function()
-        while countdown > 0 do
-            OpenSecondWinBtn.Text = "⏳ กำลังรอ... (" .. countdown .. "s)"
-            task.wait(1)
-            countdown = countdown - 1
-        end
-        
-        OpenSecondWinBtn.Text = "📂 เปิดอีกหน้าต่าง (พร้อมแล้ว)"
-        OpenSecondWinBtn.BackgroundColor3 = Color3.fromRGB(70, 160, 80)
-        isWaiting = false
-        
-        CreateSecondWindow()
-    end)
-end)
-
-Container.CanvasSize = UDim2.new(0, 0, 0, 270)
-
-return DeltaScriptHub
