@@ -1,0 +1,413 @@
+-- =========================================================================
+-- RTS HUB v5.0 — MASTER ORGANIZED EXECUTOR & ADVANCED SYSTEM
+-- พัฒนาโดย scope scout (Delta Executor & Roblox Latest Optimized)
+-- =========================================================================
+
+-- 1. โหลด WindUI อย่างปลอดภัย
+local _version = "1.6.6"
+local success, WindUI = pcall(function()
+    return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/" .. _version .. "/main.lua"))()
+end)
+
+if not success or not WindUI then
+    success, WindUI = pcall(function()
+        return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+    end)
+end
+
+if not success or not WindUI then
+    warn("❌ ไม่สามารถโหลด WindUI ได้! ตรวจสอบการเชื่อมต่ออินเทอร์เน็ตหรือตัวรัน")
+    return
+end
+
+-- 2. ตั้งค่าธีม Violet / Dark Blue Custom Theme
+pcall(function()
+    WindUI:AddTheme({
+        Name = "Violet_Master",
+        Accent = Color3.fromHex("#6d28d9"),
+        Background = Color3.fromHex("#1e0a3e"),
+        Outline = Color3.fromHex("#faf5ff"),
+        Text = Color3.fromHex("#faf5ff"),
+        Placeholder = Color3.fromHex("#8f7ee0"),
+        Button = Color3.fromHex("#7c3aed"),
+        Icon = Color3.fromHex("#8b5cf6"),
+    })
+    WindUI:SetTheme("Violet_Master")
+end)
+
+-- 3. ตารางคีย์ระบบ (100 คีย์มาตรฐาน)
+local VALID_KEYS = {
+    "HTML.KER.3307", "STR.KEY-8F2A9C4M-1E6T", "STR.KEY-3K7X2P9V-5H4R", "STR.KEY-9B1D6F8J-2W7Z", "STR.KEY-4L5T8Y3N-6Q2K", 
+    "STR.KEY-7M3H9C2X-1V8P", "STR.KEY-2F6R4B9D-5J1T", "STR.KEY-5N8K1W7H-3X9M", "STR.KEY-1P4V8Z2L-7C6Q", "STR.KEY-6X9T3J5F-4N2B",
+    "STR.KEY-9R2C7D1K-8H5W", "STR.KEY-3V8F4M6P-2T1L", "STR.KEY-7H1X5N9R-3J4Z", "STR.KEY-4B6W2T8C-9K5F", "STR.KEY-8J2P7Q1V-6M3H"
+}
+
+-- 4. สร้างหน้าต่างหลัก
+local Window = WindUI:CreateWindow({
+    Title = "RTS-HUB v5.0",
+    Icon = "door-open",
+    Author = "by scope scout",
+    Folder = "RTS_KEY_SYSTEM",
+    KeySystem = {
+        Title = "RTS-HUB Verification",
+        Note = "Join our Discord to get your key!",
+        URL = "https://discord.gg/PKufHrB9zE",
+        SaveKey = true,
+        KeyValidator = function(key)
+            return table.find(VALID_KEYS, key) ~= nil
+        end,
+    }
+})
+
+-- บริการหลักและตัวแปรระบบ
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local Camera = workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+
+-- 5. ระบบ TAG แสดงสถานะ (Ping & FPS)
+local PingTag = Window:Tag({ Title = "Ping: 0ms", Color = Color3.fromRGB(100, 200, 255) })
+task.spawn(function()
+    while true do
+        local ok, ping = pcall(function()
+            return math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue())
+        end)
+        if ok and ping then
+            PingTag:SetTitle("Ping: " .. ping .. "ms")
+            if ping <= 50 then PingTag:SetColor(Color3.fromRGB(0, 255, 0))
+            elseif ping <= 100 then PingTag:SetColor(Color3.fromRGB(255, 200, 0))
+            elseif ping <= 200 then PingTag:SetColor(Color3.fromRGB(255, 150, 0))
+            else PingTag:SetColor(Color3.fromRGB(255, 0, 0)) end
+        end
+        task.wait(2)
+    end
+end)
+
+local FPSTag = Window:Tag({ Title = "FPS: 0", Color = Color3.fromRGB(100, 150, 255) })
+local lastUpdate, frameCount = tick(), 0
+RunService.RenderStepped:Connect(function()
+    frameCount = frameCount + 1
+    local now = tick()
+    if now - lastUpdate >= 1 then
+        local fps = math.floor(frameCount / (now - lastUpdate))
+        FPSTag:SetTitle("FPS: " .. fps)
+        if fps >= 50 then FPSTag:SetColor(Color3.fromRGB(0, 255, 0))
+        elseif fps >= 30 then FPSTag:SetColor(Color3.fromRGB(255, 200, 0))
+        else FPSTag:SetColor(Color3.fromRGB(255, 0, 0)) end
+        frameCount, lastUpdate = 0, now
+    end
+end)
+
+WindUI:Notify({ Title = "Success", Content = "เข้าสู่ระบบ RTS-HUB สำเร็จแล้ว!", Duration = 3 })
+
+-- 6. ปุ่มซิปล็อคลอย (Floating Ziplock Button)
+local ZiplockGui = Instance.new("ScreenGui")
+ZiplockGui.Name = "RTS_ZiplockGui"
+ZiplockGui.ResetOnSpawn = false
+ZiplockGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+if syn and syn.protect_gui then syn.protect_gui(ZiplockGui); ZiplockGui.Parent = CoreGui
+elseif gethui then ZiplockGui.Parent = gethui()
+else ZiplockGui.Parent = CoreGui end
+
+local ZiplockBtn = Instance.new("TextButton")
+ZiplockBtn.Size = UDim2.new(0, 50, 0, 50)
+ZiplockBtn.Position = UDim2.new(0.15, 0, 0.65, 0)
+ZiplockBtn.BackgroundColor3 = Color3.fromRGB(15, 23, 42)
+ZiplockBtn.Text = "LOCK"
+ZiplockBtn.TextColor3 = Color3.fromRGB(139, 92, 246)
+ZiplockBtn.Font = Enum.Font.GothamBold
+ZiplockBtn.TextSize = 11
+ZiplockBtn.Active = true
+ZiplockBtn.Draggable = true
+ZiplockBtn.Visible = false
+ZiplockBtn.Parent = ZiplockGui
+
+Instance.new("UICorner", ZiplockBtn).CornerRadius = UDim.new(0, 10)
+local ZStroke = Instance.new("UIStroke", ZiplockBtn)
+ZStroke.Color = Color3.fromRGB(139, 92, 246)
+ZStroke.Thickness = 2
+
+-- =========================================================================
+-- 🗂️ หมวดหมู่ที่ 1: Main (Console Executor Panel)
+-- =========================================================================
+local TabMain = Window:Tab({ Title = "Main", Icon = "terminal" })
+local MainSection = TabMain:Section({ Title = "Script Executor Panel", Box = true, BoxBorder = true, Opened = true })
+
+local inputScriptName, inputScriptCode = "", ""
+
+MainSection:Input({
+    Title = "ชื่อสคริปต์",
+    Placeholder = "ระบุชื่อสคริปต์...",
+    Callback = function(text) inputScriptName = text end
+})
+
+MainSection:Input({
+    Title = "สคริปต์ (Loadstring)",
+    Placeholder = "loadstring(game:HttpGet(...))()",
+    Callback = function(text) inputScriptCode = text end
+})
+
+-- =========================================================================
+-- 🗂️ หมวดหมู่ที่ 2 & 3: บันทึกสคริปต์ & ประวัติการใช้งาน
+-- =========================================================================
+local TabSaved = Window:Tab({ Title = "บันทึกสคริปต์", Icon = "bookmark" })
+local SavedSection = TabSaved:Section({ Title = "สคริปต์ที่บันทึกไว้", Box = true, BoxBorder = true, Opened = true })
+
+local TabHistory = Window:Tab({ Title = "ประวัติการใช้งาน", Icon = "clock" })
+local HistorySection = TabHistory:Section({ Title = "ประวัติทั้งหมด", Box = true, BoxBorder = true, Opened = true })
+
+MainSection:Button({
+    Title = "🟢 ใช้งานสคริปต์",
+    Callback = function()
+        if inputScriptCode ~= "" then
+            local success, err = pcall(function()
+                loadstring(inputScriptCode)()
+            end)
+            
+            if success then
+                local sName = (inputScriptName ~= "") and inputScriptName or "Un-named Script"
+                WindUI:Notify({ Title = "สำเร็จ", Content = "รันสคริปต์ " .. sName .. " สำเร็จ!", Duration = 3 })
+                
+                -- เพิ่มลงแท็บบันทึก
+                SavedSection:Button({
+                    Title = "📁 " .. sName,
+                    Callback = function()
+                        pcall(function() loadstring(inputScriptCode)() end)
+                        WindUI:Notify({ Title = "โหลดสคริปต์", Content = "กำลังรัน: " .. sName, Duration = 2 })
+                    end
+                })
+                
+                -- เพิ่มลงประวัติ
+                local currentTime = os.date("%H:%M:%S - %d/%m/%Y")
+                HistorySection:Paragraph({
+                    Title = "ชื่อ: " .. sName .." (".. currentTime ..")",
+                    Content = "สถานะ: สำเร็จ [🟢]\nโค้ด:\n" .. inputScriptCode
+                })
+            else
+                WindUI:Notify({ Title = "ข้อผิดพลาด", Content = "รันสคริปต์ไม่สำเร็จ: " .. tostring(err), Duration = 4 })
+            end
+        else
+            WindUI:Notify({ Title = "แจ้งเตือน", Content = "กรุณากรอกโค้ดสคริปต์ก่อนรัน", Duration = 2 })
+        end
+    end
+})
+
+MainSection:Button({
+    Title = "🔴 ล้างข้อมูล",
+    Callback = function()
+        inputScriptName = ""
+        inputScriptCode = ""
+        WindUI:Notify({ Title = "ล้างข้อมูล", Content = "ล้างช่องกรอกข้อมูลเรียบร้อยแล้ว", Duration = 2 })
+    end
+})
+
+-- =========================================================================
+-- 🗂️ หมวดหมู่ที่ 4: Players (จัดการผู้เล่นและตัวละคร)
+-- =========================================================================
+local TabPlayers = Window:Tab({ Title = "Players", Icon = "users" })
+local PlayersSec = TabPlayers:Section({ Title = "จัดการตัวละครและผู้เล่น", Box = true, Opened = true })
+
+PlayersSec:Slider({
+    Title = "ความเร็วเดิน (WalkSpeed)",
+    Value = { Min = 16, Max = 300, Default = 16 },
+    Callback = function(v)
+        pcall(function()
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                LocalPlayer.Character.Humanoid.WalkSpeed = v
+            end
+        end)
+    end
+})
+
+PlayersSec:Slider({
+    Title = "พลังกระโดด (JumpPower)",
+    Value = { Min = 50, Max = 300, Default = 50 },
+    Callback = function(v)
+        pcall(function()
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                LocalPlayer.Character.Humanoid.JumpPower = v
+            end
+        end)
+    end
+})
+
+PlayersSec:Button({
+    Title = "👥 เช็คจำนวนผู้เล่นในเซิร์ฟเวอร์",
+    Callback = function()
+        WindUI:Notify({ Title = "Players Info", Content = "ผู้เล่นในเซิร์ฟเวอร์: " .. #Players:GetPlayers() .. " คน", Duration = 3 })
+    end
+})
+
+-- =========================================================================
+-- 🗂️ หมวดหมู่ที่ 5: Combat & Lock (ระบบต่อสู้ / Ziplock Lock)
+-- =========================================================================
+local TabCombat = Window:Tab({ Title = "Combat & Lock", Icon = "sword" })
+local CombatSec = TabCombat:Section({ Title = "ระบบการต่อสู้ (Ziplock Lock)", Box = true, Opened = true })
+
+local ZiplockActive, IsLockedOn, AimFOV = false, false, 150
+
+ZiplockBtn.MouseButton1Down:Connect(function()
+    if ZiplockActive then
+        IsLockedOn = not IsLockedOn
+        ZiplockBtn.BackgroundColor3 = IsLockedOn and Color3.fromRGB(124, 58, 237) or Color3.fromRGB(15, 23, 42)
+        ZiplockBtn.TextColor3 = IsLockedOn and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(139, 92, 246)
+    end
+end)
+
+local function getClosestTarget()
+    local target, minDist = nil, AimFOV
+    local center = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character then
+            local hrp = p.Character:FindFirstChild("HumanoidRootPart")
+            local hum = p.Character:FindFirstChild("Humanoid")
+            if hrp and hum and hum.Health > 0 then
+                local sp, onScr = Camera:WorldToViewportPoint(hrp.Position)
+                if onScr then
+                    local d = (Vector2.new(sp.X, sp.Y) - center).Magnitude
+                    if d < minDist then minDist = d; target = hrp end
+                end
+            end
+        end
+    end
+    return target
+end
+
+RunService.RenderStepped:Connect(function()
+    if ZiplockActive and IsLockedOn then
+        pcall(function()
+            local t = getClosestTarget()
+            if t then Camera.CFrame = CFrame.new(Camera.CFrame.Position, t.Position) end
+        end)
+    end
+end)
+
+CombatSec:Toggle({
+    Title = "🔒 เปิด/ปิด ปุ่มซิปล็อค (Ziplock Lock)",
+    Default = false,
+    Callback = function(s)
+        ZiplockActive = s
+        ZiplockBtn.Visible = s
+        if not s then IsLockedOn = false end
+        WindUI:Notify({ Title = "Ziplock", Content = s and "เปิดใช้งานปุ่มซิปล็อคแล้ว" or "ปิดการทำงานแล้ว", Duration = 2 })
+    end
+})
+
+CombatSec:Slider({
+    Title = "รัศมีองศาล็อคเป้า (FOV)",
+    Value = { Min = 50, Max = 500, Default = 150 },
+    Callback = function(v) AimFOV = v end
+})
+
+-- =========================================================================
+-- 🗂️ หมวดหมู่ที่ 6: ESP Visuals (Player & Monster ESP)
+-- =========================================================================
+local TabESP = Window:Tab({ Title = "ESP Visuals", Icon = "eye" })
+local ESPSect = TabESP:Section({ Title = "ระบบมองทะลุขั้นสูง", Box = true, Opened = true })
+
+local ESPState = { Enabled = false, Box = true, Tracer = true, Info = true }
+local ESPDraws = {}
+
+local function ClearESP(obj)
+    if ESPDraws[obj] then
+        pcall(function()
+            for _, o in pairs(ESPDraws[obj]) do if o and typeof(o.Remove) == "function" then o:Remove() end end
+        end)
+        ESPDraws[obj] = nil
+    end
+end
+
+RunService.RenderStepped:Connect(function()
+    if not ESPState.Enabled then
+        for obj in pairs(ESPDraws) do ClearESP(obj) end
+        return
+    end
+
+    pcall(function()
+        local targets = {}
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer and p.Character then
+                table.insert(targets, {Instance = p.Character, Name = p.Name, Type = "Player", Color = Color3.fromRGB(139, 92, 246)})
+            end
+        end
+
+        for _, v in ipairs(workspace:GetDescendants()) do
+            if v:IsA("Model") and v:FindFirstChild("Humanoid") and v:FindFirstChild("HumanoidRootPart") then
+                if not Players:GetPlayerFromCharacter(v) and v ~= LocalPlayer.Character then
+                    table.insert(targets, {Instance = v, Name = v.Name, Type = "Monster", Color = Color3.fromRGB(239, 68, 68)})
+                end
+            end
+        end
+
+        for _, target in ipairs(targets) do
+            local char, hrp, hum = target.Instance, target.Instance:FindFirstChild("HumanoidRootPart"), target.Instance:FindFirstChild("Humanoid")
+            if not hrp or not hum or hum.Health <= 0 then ClearESP(char); continue end
+
+            if not ESPDraws[char] and Drawing then
+                ESPDraws[char] = { Box = Drawing.new("Square"), Line = Drawing.new("Line"), Text = Drawing.new("Text") }
+                ESPDraws[char].Box.Thickness, ESPDraws[char].Box.Filled = 1.5, false
+                ESPDraws[char].Line.Thickness = 1
+                ESPDraws[char].Text.Size, ESPDraws[char].Text.Center, ESPDraws[char].Text.Outline, ESPDraws[char].Text.Color = 13, true, true, Color3.new(1,1,1)
+            end
+
+            local draws = ESPDraws[char]
+            if draws then
+                local vPos, onScr = Camera:WorldToViewportPoint(hrp.Position)
+                local head = char:FindFirstChild("Head")
+                local tV = head and Camera:WorldToViewportPoint(head.Position + Vector3.new(0, 0.5, 0)) or vPos
+                local bV = Camera:WorldToViewportPoint(hrp.Position - Vector3.new(0, 3, 0))
+                local h, w = math.abs(tV.Y - bV.Y), math.abs(tV.Y - bV.Y) / 2
+
+                draws.Box.Visible = onScr and ESPState.Box
+                draws.Box.Color = target.Color
+                draws.Line.Visible = onScr and ESPState.Tracer
+                draws.Line.Color = target.Color
+                draws.Text.Visible = onScr and ESPState.Info
+
+                if onScr then
+                    if ESPState.Box then draws.Box.Size = Vector2.new(w, h); draws.Box.Position = Vector2.new(vPos.X - w / 2, tV.Y) end
+                    if ESPState.Tracer then draws.Line.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y); draws.Line.To = Vector2.new(vPos.X, bV.Y) end
+                    if ESPState.Info then
+                        local dist = math.floor((hrp.Position - Camera.CFrame.Position).Magnitude)
+                        draws.Text.Text = "[" .. target.Type .. "] " .. target.Name .. " (" .. dist .. "m)"
+                        draws.Text.Position = Vector2.new(vPos.X, tV.Y - 18)
+                    end
+                end
+            end
+        end
+    end)
+end)
+
+ESPSect:Toggle({ Title = "👁️ เปิด/ปิด ESP ขั้นสูง", Default = false, Callback = function(s) ESPState.Enabled = s end })
+ESPSect:Toggle({ Title = "📦 แสดงกรอบกล่อง (Box)", Default = true, Callback = function(s) ESPState.Box = s end })
+ESPSect:Toggle({ Title = "📏 แสดงเส้นโยง (Tracer)", Default = true, Callback = function(s) ESPState.Tracer = s end })
+ESPSect:Toggle({ Title = "🏷️ แสดงชื่อ ชนิด และระยะทาง", Default = true, Callback = function(s) ESPState.Info = s end })
+
+-- =========================================================================
+-- 🗂️ หมวดหมู่ที่ 7 & 8: การตั้งค่า & ข้อมูล
+-- =========================================================================
+local TabSettings = Window:Tab({ Title = "การตั้งค่า", Icon = "settings" })
+local SettingsSection = TabSettings:Section({ Title = "ตั้งค่า UI และเมนู", Box = true, Opened = true })
+
+SettingsSection:Button({
+    Title = "❌ ปิดการทำงานและลบ Hub UI ทั้งหมด",
+    Callback = function()
+        pcall(function() ZiplockGui:Destroy() end)
+        Window:Destroy()
+    end
+})
+
+local TabInfo = Window:Tab({ Title = "ข้อมูล", Icon = "info" })
+local InfoSection = TabInfo:Section({ Title = "ช่องทางติดต่อและสนับสนุน", Box = true, Opened = true })
+
+InfoSection:Button({
+    Title = "คัดลอกลิงก์ Discord (Get Key)",
+    Callback = function()
+        if setclipboard then
+            setclipboard("https://discord.gg/PKufHrB9zE")
+            WindUI:Notify({ Title = "สำเร็จ", Content = "คัดลอกลิงก์ Discord แล้ว!", Duration = 3 })
+        end
+    end
+})
