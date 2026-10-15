@@ -1,49 +1,142 @@
+local _version = "1.6.66"
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/" .. _version .. "/main.lua"))() 
+
+local Window = WindUI:CreateWindow({
+    Title = "RTH-Hub", -- window title
+    Icon = "dragon", -- lucide icon or "rbxassetid://" or URL. optional
+    Author = "", -- window subtitle. optional
+})
+
+local Window = WindUI:CreateWindow({ -- creating window from /docs/windui/window
+    Title = "HTML.RTS",
+    KeySystem = {
+        Title = "KER",
+        Note = "HTML.KER.3307",
+        
+        KeyValidator = function(key) -- your key validation logic
+            local validKeys = {"HTML.KER.3307"}
+            return table.find(validKeys, key) ~= nil
+        end,
+        
+        SaveKey = true,
+        URL = "https://discord.gg/kgRcpVuDNd", -- link to get keys
+        
+        Thumbnail = {
+            Image = "rbxassetid://1234567890",
+            Title = "Premium Member",
+        }
+    }
+})
+
 -- =========================================================================
--- RTS HUB v5.2 - COMPLETE PRO EDITION
--- พัฒนาโดย scope scout | No Key & Advanced Utilities
+-- 🎨 ธีมสีเข้ม — ปรับแต่งพิเศษ
 -- =========================================================================
-local _version = "5.0.0"
-
--- โหลดไลบรารี WindUI
-local success, WindUI = pcall(function()
-    return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/" .. _version .. "/main.lua"))()
-end)
-
-if not success or not WindUI then
-    warn("❌ Failed to load WindUI library! ตรวจสอบการเชื่อมต่อหรือเวอร์ชัน")
-    return
-end
-
--- ตั้งค่าธีม Violet
 pcall(function()
     WindUI:AddTheme({
-        Name = "Violet",
-        Accent = Color3.fromHex("#6d28d9"),
-        Background = Color3.fromHex("#1e0a3e"),
-        Outline = Color3.fromHex("#faf5ff"),
-        Text = Color3.fromHex("#faf5ff"),
-        Placeholder = Color3.fromHex("#8f7ee0"),
-        Button = Color3.fromHex("#7c3aed"),
-        Icon = Color3.fromHex("#8b5cf6"),
+        Primary = Color3.fromHex("#a1a1aa"),
+        White = Color3.new(1,1,1),
+        Black = Color3.new(0,0,0),
+        Dialog = Color3.fromHex("#18181b"),
+        Background = Color3.fromHex("#101010"),
+        BackgroundTransparency = 0,
+        Hover = Color3.fromHex("#FFFFFF"),
+        PanelBackground = Color3.new(1,1,1),
+        PanelBackgroundTransparency = 0.95,
+        WindowBackground = Color3.fromHex("#101010"),
+        WindowShadow = Color3.new(0,0,0),
+        WindowTopbarTitle = Color3.fromHex("#FFFFFF"),
+        WindowTopbarAuthor = Color3.fromHex("#FFFFFF"),
+        WindowTopbarIcon = Color3.fromHex("#a1a1aa"),
+        WindowTopbarButtonIcon = Color3.fromHex("#a1a1aa"),
+        WindowSearchBarBackground = Color3.fromHex("#101010"),
+        TabBackground = Color3.fromHex("#FFFFFF"),
+        TabBackgroundHover = Color3.fromHex("#FFFFFF"),
+        TabBackgroundHoverTransparency = 0.97,
+        TabBackgroundActive = Color3.fromHex("#FFFFFF"),
+        TabBackgroundActiveTransparency = 0.93,
+        TabText = Color3.fromHex("#FFFFFF"),
+        TabTextTransparency = 0.3,
+        TabTextTransparencyActive = 0,
+        TabTitle = Color3.fromHex("#FFFFFF"),
+        TabIcon = Color3.fromHex("#a1a1aa"),
+        TabIconTransparency = 0.4,
+        TabIconTransparencyActive = 0.1,
+        TabBorderTransparency = 1,
+        TabBorderTransparencyActive = 0.75,
+        TabBorder = Color3.new(1,1,1),
+        ElementBackground = Color3.fromHex("#FFFFFF"),
+        ElementBackgroundTransparency = 0.93,
+        ElementTitle = Color3.fromHex("#FFFFFF"),
+        ElementDesc = Color3.fromHex("#FFFFFF"),
+        ElementIcon = Color3.fromHex("#a1a1aa"),
+        PopupBackground = Color3.fromHex("#101010"),
+        PopupBackgroundTransparency = "BackgroundTransparency",
+        PopupTitle = Color3.fromHex("#FFFFFF"),
+        PopupContent = Color3.fromHex("#FFFFFF"),
+        PopupIcon = Color3.fromHex("#a1a1aa"),
+        DialogBackground = Color3.fromHex("#101010"),
+        DialogBackgroundTransparency = "BackgroundTransparency",
+        DialogTitle = Color3.fromHex("#FFFFFF"),
+        DialogContent = Color3.fromHex("#FFFFFF"),
+        DialogIcon = Color3.fromHex("#a1a1aa"),
+        Toggle = Color3.fromHex("#52525b"),
+        ToggleBar = Color3.new(1,1,1),
+        Checkbox = Color3.fromHex("#0091FF"),
+        CheckboxIcon = Color3.new(1,1,1),
+        CheckboxBorder = Color3.new(1,1,1),
+        CheckboxBorderTransparency = 0.75,
+        SliderIcon = Color3.fromHex("#a1a1aa"),
+        Slider = Color3.fromHex("#0091FF"),
+        SliderThumb = Color3.new(1,1,1),
+        SliderIconFrom = Color3.fromHex("#a1a1aa"),
+        SliderIconTo = Color3.fromHex("#a1a1aa"),
+        Tooltip = Color3.fromHex("4C4C4C"),
+        TooltipText = Color3.new(1,1,1),
+        TooltipSecondary = Color3.fromHex("#0091FF"),
+        TooltipSecondaryText = Color3.new(1,1,1),
+        TabSectionIcon = Color3.fromHex("#a1a1aa"),
+        SectionIcon = Color3.fromHex("#a1a1aa"),
+        SectionExpandIcon = Color3.new(1,1,1),
+        SectionExpandIconTransparency = 0.4,
+        SectionBox = Color3.new(1,1,1),
+        SectionBoxTransparency = 0.95,
+        SectionBoxBorder = Color3.new(1,1,1),
+        SectionBoxBorderTransparency = 0.75,
+        SectionBoxBackground = Color3.new(1,1,1),
+        SectionBoxBackgroundTransparency = 0.95,
+        SearchBarBorder = Color3.new(1,1,1),
+        SearchBarBorderTransparency = 0.75,
+        Notification = Color3.fromHex("#101010"),
+        NotificationTitle = Color3.fromHex("#FFFFFF"),
+        NotificationTitleTransparency = 0,
+        NotificationContent = Color3.fromHex("#FFFFFF"),
+        NotificationContentTransparency = 0.4,
+        NotificationDuration = Color3.new(1,1,1),
+        NotificationDurationTransparency = 0.95,
+        NotificationBorder = Color3.new(1,1,1),
+        NotificationBorderTransparency = 0.75,
+        DropdownTabBorder = Color3.new(1,1,1),
+        LabelBackground = Color3.new(1,1,1),
+        LabelBackgroundTransparency = 0.95,
     })
-    WindUI:SetTheme("Violet")
+    WindUI:SetTheme("Default")
 end)
 
 WindUI:Notify({
     Title = "RTS-HUB v5.2",
-    Content = "✅ โหลดระบบเสริมทั้งหมดสำเร็จ | พร้อมใช้งาน",
+    Content = "✅ โหลดสำเร็จ | ธีมสีเข้ม",
     Duration = 3
 })
 
 -- สร้างหน้าต่างหลัก
 local Window = WindUI:CreateWindow({
-    Title = "RTS-HUB v5.2 Pro",
+    Title = "RTS-HUB v5.2",
     Icon = "door-open",
     Author = "by scope scout",
     Folder = "RTS_NO_KEY"
 })
 
--- ตัวแปรระบบเบื้องต้น
+-- ตัวแปรระบบ
 local inputScriptName = ""
 local inputScriptCode = ""
 local scriptCounter = 0
@@ -56,7 +149,7 @@ local Lighting = game:GetService("Lighting")
 local TeleportService = game:GetService("TeleportService")
 
 -- ==========================================================
--- 💾 ระบบบันทึก/โหลดค่าตั้งค่า (Config Management)
+-- 💾 ระบบบันทึก/โหลดค่าตั้งค่า
 -- ==========================================================
 local SaveFileName = "RTS_HUB_v5_Config.json"
 local ConfigData = {
@@ -65,7 +158,6 @@ local ConfigData = {
     TeamCheck = true,
     CrosshairColor = {255, 255, 255},
     CrosshairEnabled = false,
-    AimLockEnabled = false,
     ESPEnabled = false,
     AntiAFKEnabled = false,
     WalkSpeed = 16,
@@ -77,7 +169,7 @@ local function LoadConfig()
         local ok, result = pcall(function() return HttpService:JSONDecode(readfile(SaveFileName)) end)
         if ok and type(result) == "table" then
             for k, v in pairs(result) do ConfigData[k] = v end
-            print("[RTS-HUB v5] ✅ โหลดค่าตั้งค่าสำเร็จ")
+            print("[RTS-HUB] ✅ โหลดค่าตั้งค่าสำเร็จ")
         end
     end
 end
@@ -85,7 +177,7 @@ end
 local function SaveConfig()
     if writefile then
         local ok = pcall(function() writefile(SaveFileName, HttpService:JSONEncode(ConfigData)) end)
-        if ok then print("[RTS-HUB v5] 💾 บันทึกค่าตั้งค่าสำเร็จ") end
+        if ok then print("[RTS-HUB] 💾 บันทึกค่าตั้งค่าสำเร็จ") end
     end
 end
 
@@ -162,11 +254,11 @@ MainSection:Button({
 })
 
 -- =========================================================================
--- ⚙️ แท็บที่ 2: การตั้งค่า | Crosshair + AimLock + Player Mods
+-- ⚙️ แท็บที่ 2: การตั้งค่า
 -- =========================================================================
 local TabSettings = Window:Tab({ Title = "ตั้งค่า", Icon = "settings" })
 
--- 🎮 ระบบผู้เล่น (Player Modifications)
+-- 🎮 ปรับแต่งตัวละคร
 local PlayerModSection = TabSettings:Section({ Title = "⚡ ปรับแต่งตัวละคร", Box = true, Opened = true })
 
 PlayerModSection:Slider({
@@ -181,13 +273,12 @@ PlayerModSection:Slider({
     end
 })
 
--- ผูกความเร็วตอนตัวละครเกิดใหม่
 LocalPlayer.CharacterAdded:Connect(function(char)
     local hum = char:WaitForChild("Humanoid", 5)
     if hum then hum.WalkSpeed = ConfigData.WalkSpeed end
 end)
 
--- 🎯 เป้าเล็งหมุนได้ (Dynamic Crosshair)
+-- 🎯 เป้าเล็งหมุนได้
 local CrosshairSection = TabSettings:Section({ Title = "🎯 เป้าเล็ง", Box = true })
 local CrosshairSettings = {
     Enabled = ConfigData.CrosshairEnabled,
@@ -240,10 +331,10 @@ CrosshairSection:Toggle({
     end
 })
 
--- 🎮 ระบบล็อคเป้า (AimLock)
+-- 🎮 ล็อคเป้าอัจฉริยะ
 local AimSection = TabSettings:Section({ Title = "🎮 ล็อคเป้าอัจฉริยะ", Box = true })
 local AimSettings = {
-    Enabled = ConfigData.AimLockEnabled,
+    Enabled = false,
     FOV = ConfigData.FOV,
     TeamCheck = ConfigData.TeamCheck
 }
@@ -276,11 +367,9 @@ end)
 
 AimSection:Toggle({
     Title = "🎮 เปิด/ปิด ล็อคเป้า",
-    Default = ConfigData.AimLockEnabled,
+    Default = false,
     Callback = function(s)
         AimSettings.Enabled = s
-        ConfigData.AimLockEnabled = s
-        SaveConfig()
         WindUI:Notify({ Title = "AimLock", Content = s and "เปิดแล้ว" or "ปิดแล้ว", Duration = 2 })
     end
 })
@@ -302,10 +391,10 @@ AimSection:Slider({
 })
 
 -- =========================================================================
--- 👁️ แท็บที่ 3: ESP มองทะลุ (ESP Suite)
+-- 👁️ แท็บที่ 3: ESP มองทะลุ
 -- =========================================================================
 local TabESP = Window:Tab({ Title = "ESP มองทะลุ", Icon = "eye" })
-local ESPSect = TabESP:Section({ Title = "ตั้งค่า ESP รายละเอียดสูง", Box = true, BoxBorder = true, Opened = true })
+local ESPSect = TabESP:Section({ Title = "ตั้งค่า ESP", Box = true, BoxBorder = true, Opened = true })
 
 local ESPState = { Enabled = ConfigData.ESPEnabled, Box = true, Tracer = true, Name = true, Dist = true }
 local ESPDraws = {}
@@ -329,8 +418,8 @@ RunService.RenderStepped:Connect(function()
                     Line = Drawing.new("Line"),
                     Text = Drawing.new("Text")
                 }
-                ESPDraws[p].Box.Thickness=1.5; ESPDraws[p].Box.Filled=false; ESPDraws[p].Box.Color=Color3.fromRGB(138,43,226)
-                ESPDraws[p].Line.Thickness=1; ESPDraws[p].Line.Color=Color3.fromRGB(138,43,226)
+                ESPDraws[p].Box.Thickness=1.5; ESPDraws[p].Box.Filled=false; ESPDraws[p].Box.Color=Color3.fromRGB(0,145,255)
+                ESPDraws[p].Line.Thickness=1; ESPDraws[p].Line.Color=Color3.fromRGB(0,145,255)
                 ESPDraws[p].Text.Size=14; ESPDraws[p].Text.Center=true; ESPDraws[p].Text.Outline=true; ESPDraws[p].Text.Color=Color3.new(1,1,1)
             end
             
@@ -373,12 +462,12 @@ ESPSect:Toggle({ Title = "📏 แสดงเส้นโยง", Default = tru
 ESPSect:Toggle({ Title = "🏷️ แสดงชื่อ+ระยะ", Default = true, Callback = function(s) ESPState.Name=s; ESPState.Dist=s end })
 
 -- =========================================================================
--- 📊 แท็บที่ 4: สถานะเซิร์ฟเวอร์ + Fullbright + ย้ายเซิร์ฟ + Anti-AFK
+-- 📊 แท็บที่ 4: สถานะเซิร์ฟเวอร์ + เครื่องมือ
 -- =========================================================================
 local TabInfo = Window:Tab({ Title = "สถานะ/เซิร์ฟ", Icon = "info" })
 local InfoSect = TabInfo:Section({ Title = "เครื่องมือเซิร์ฟเวอร์ & ระบบ", Box = true, BoxBorder = true, Opened = true })
 
--- ระบบสว่างรอบทิศทาง (Fullbright)
+-- Fullbright
 InfoSect:Toggle({
     Title = "💡 เปิดแสงสว่างสูงสุด (Fullbright)",
     Default = ConfigData.FullbrightEnabled,
@@ -397,94 +486,21 @@ InfoSect:Toggle({
     end
 })
 
--- ปุ่มย้ายเซิร์ฟเวอร์ (Server Hop)
+-- Server Hop
 InfoSect:Button({
     Title = "🔀 ย้ายเซิร์ฟเวอร์อื่น (Server Hop)",
     Callback = function()
-        WindUI:Notify({ Title = "Server Hop", Content = "กำลังค้นหาและย้ายเซิร์ฟ...", Duration = 3 })
+        WindUI:Notify({ Title = "Server Hop", Content = "กำลังค้นหาเซิร์ฟเวอร์...", Duration = 3 })
         pcall(function()
-            local servers = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100"))
-            for _, s in ipairs(servers.data) do
-                if s.playing < s.maxPlayers and s.id ~= game.JobId then
-                    TeleportService:TeleportToPlaceInstance(game.PlaceId, s.id, LocalPlayer)
-                    return
+            local response = game:HttpGet("https://games.roblox.com/v1/games/"..tostring(game.PlaceId).."/servers/Public?sortOrder=Asc&limit=50")
+            local data = HttpService:JSONDecode(response)
+            if data and data.data then
+                for _, s in ipairs(data.data) do
+                    if s.playing < s.maxPlayers and s.id ~= game.JobId then
+                        TeleportService:TeleportToPlaceInstance(game.PlaceId, s.id, LocalPlayer)
+                        return
+                    end
                 end
+                WindUI:Notify({ Title = "แจ้งเตือน", Content = "ไม่พบเซิร์ฟเวอร์อื่น", Duration = 2 })
             end
         end)
-    end
-})
-
--- ปุ่มรีเซิร์ฟเวอร์ (Rejoin)
-InfoSect:Button({
-    Title = "🔄 รีเซิร์ฟเวอร์เดิม (Rejoin)",
-    Callback = function()
-        WindUI:Notify({ Title = "Rejoin", Content = "กำลังเข้าสู่เซิร์ฟเดิม...", Duration = 2 })
-        TeleportService:Teleport(game.PlaceId, LocalPlayer)
-    end
-})
-
--- คัดลอก JobId
-InfoSect:Button({
-    Title = "📋 คัดลอก Server JobID",
-    Callback = function()
-        if setclipboard then
-            setclipboard(game.JobId)
-            WindUI:Notify({ Title = "✅ สำเร็จ", Content = "คัดลอก JobID แล้ว", Duration = 2 })
-        else
-            WindUI:Notify({ Title = "❌ ไม่รองรับ", Content = "Executor ไม่มีฟังก์ชัน setclipboard", Duration = 2 })
-        end
-    end
-})
-
--- FPS & Ping Display Tags
-local FPSTag = Window:Tag({ Title = "FPS: 0", Color = Color3.fromRGB(100,150,255) })
-local PingTag = Window:Tag({ Title = "Ping: 0ms", Color = Color3.fromRGB(100,200,255) })
-
-do
-    local last, frames = tick(), 0
-    RunService.RenderStepped:Connect(function()
-        frames += 1
-        local now = tick()
-        if now-last >= 1 then
-            local fps = math.floor(frames/(now-last))
-            FPSTag:SetTitle("FPS: "..fps)
-            FPSTag:SetColor(fps>=50 and Color3.fromRGB(0,255,0) or fps>=30 and Color3.fromRGB(255,200,0) or Color3.fromRGB(255,0,0))
-            frames, last = 0, now
-        end
-    end)
-    task.spawn(function()
-        while task.wait(2) do
-            local ok, ping = pcall(function() return math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()) end)
-            if ok and ping then
-                PingTag:SetTitle("Ping: "..ping.."ms")
-                PingTag:SetColor(ping<=50 and Color3.fromRGB(0,255,0) or ping<=100 and Color3.fromRGB(255,200,0) or Color3.fromRGB(255,0,0))
-            end
-        end
-    end)
-end
-
--- กันหลุด AFK
-local antiAFKConn
-InfoSect:Toggle({
-    Title = "🛡️ กันหลุด (Anti-AFK)",
-    Default = ConfigData.AntiAFKEnabled,
-    Callback = function(s)
-        local vu = game:GetService("VirtualUser")
-        if s then
-            antiAFKConn = LocalPlayer.Idled:Connect(function()
-                vu:Button2Down(Vector2.new(), Camera.CFrame)
-                task.wait(1)
-                vu:Button2Up(Vector2.new(), Camera.CFrame)
-            end)
-            ConfigData.AntiAFKEnabled = true
-            WindUI:Notify({ Title = "Anti-AFK", Content = "เปิดกันหลุดแล้ว", Duration = 2 })
-        else
-            if antiAFKConn then antiAFKConn:Disconnect() antiAFKConn = nil end
-            ConfigData.AntiAFKEnabled = false
-            WindUI:Notify({ Title = "Anti-AFK", Content = "ปิดกันหลุดแล้ว", Duration = 2 })
-        end
-        SaveConfig()
-    end
-})
-
-print("✅ RTS-HUB v5.2 โหลดเสร็จสมบูรณ์แบบพร้อมใช้งาน")
