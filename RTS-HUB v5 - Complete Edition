@@ -1,0 +1,490 @@
+-- =========================================================================
+-- RTS HUB v5.2 - COMPLETE PRO EDITION
+-- พัฒนาโดย scope scout | No Key & Advanced Utilities
+-- =========================================================================
+local _version = "5.0.0"
+
+-- โหลดไลบรารี WindUI
+local success, WindUI = pcall(function()
+    return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/" .. _version .. "/main.lua"))()
+end)
+
+if not success or not WindUI then
+    warn("❌ Failed to load WindUI library! ตรวจสอบการเชื่อมต่อหรือเวอร์ชัน")
+    return
+end
+
+-- ตั้งค่าธีม Violet
+pcall(function()
+    WindUI:AddTheme({
+        Name = "Violet",
+        Accent = Color3.fromHex("#6d28d9"),
+        Background = Color3.fromHex("#1e0a3e"),
+        Outline = Color3.fromHex("#faf5ff"),
+        Text = Color3.fromHex("#faf5ff"),
+        Placeholder = Color3.fromHex("#8f7ee0"),
+        Button = Color3.fromHex("#7c3aed"),
+        Icon = Color3.fromHex("#8b5cf6"),
+    })
+    WindUI:SetTheme("Violet")
+end)
+
+WindUI:Notify({
+    Title = "RTS-HUB v5.2",
+    Content = "✅ โหลดระบบเสริมทั้งหมดสำเร็จ | พร้อมใช้งาน",
+    Duration = 3
+})
+
+-- สร้างหน้าต่างหลัก
+local Window = WindUI:CreateWindow({
+    Title = "RTS-HUB v5.2 Pro",
+    Icon = "door-open",
+    Author = "by scope scout",
+    Folder = "RTS_NO_KEY"
+})
+
+-- ตัวแปรระบบเบื้องต้น
+local inputScriptName = ""
+local inputScriptCode = ""
+local scriptCounter = 0
+local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Lighting = game:GetService("Lighting")
+local TeleportService = game:GetService("TeleportService")
+
+-- ==========================================================
+-- 💾 ระบบบันทึก/โหลดค่าตั้งค่า (Config Management)
+-- ==========================================================
+local SaveFileName = "RTS_HUB_v5_Config.json"
+local ConfigData = {
+    AutoSaveEnabled = true,
+    FOV = 150,
+    TeamCheck = true,
+    CrosshairColor = {255, 255, 255},
+    CrosshairEnabled = false,
+    AimLockEnabled = false,
+    ESPEnabled = false,
+    AntiAFKEnabled = false,
+    WalkSpeed = 16,
+    FullbrightEnabled = false
+}
+
+local function LoadConfig()
+    if isfile and isfile(SaveFileName) then
+        local ok, result = pcall(function() return HttpService:JSONDecode(readfile(SaveFileName)) end)
+        if ok and type(result) == "table" then
+            for k, v in pairs(result) do ConfigData[k] = v end
+            print("[RTS-HUB v5] ✅ โหลดค่าตั้งค่าสำเร็จ")
+        end
+    end
+end
+
+local function SaveConfig()
+    if writefile then
+        local ok = pcall(function() writefile(SaveFileName, HttpService:JSONEncode(ConfigData)) end)
+        if ok then print("[RTS-HUB v5] 💾 บันทึกค่าตั้งค่าสำเร็จ") end
+    end
+end
+
+LoadConfig()
+
+-- =========================================================================
+-- 📋 แท็บที่ 1: Main - รัน/เซฟ/ล้าง สคริปต์
+-- =========================================================================
+local TabMain = Window:Tab({ Title = "Main", Icon = "home" })
+local MainSection = TabMain:Section({
+    Title = "Script Executor & Tools",
+    Box = true, BoxBorder = true, Icon = "terminal", Opened = true
+})
+
+MainSection:Input({
+    Title = "ชื่อสคริปต์",
+    Placeholder = "ตัวอย่าง: Custom Script...",
+    Callback = function(t) inputScriptName = t end
+})
+
+MainSection:Input({
+    Title = "โค้ดสคริปต์",
+    Placeholder = "loadstring(game:HttpGet('ลิงก์'))()",
+    Callback = function(t) inputScriptCode = t end
+})
+
+MainSection:Button({
+    Title = "🟢 รันสคริปต์",
+    Callback = function()
+        if inputScriptName == "" or inputScriptCode == "" then
+            WindUI:Notify({ Title = "⚠️ แจ้งเตือน", Content = "กรุณากรอกชื่อและโค้ดให้ครบ", Duration = 2 })
+            return
+        end
+        local fn, err = loadstring(inputScriptCode)
+        if fn then
+            local ok, runErr = pcall(fn)
+            if ok then
+                scriptCounter += 1
+                WindUI:Notify({ Title = "✅ สำเร็จ", Content = "รัน: "..inputScriptName.." (#"..scriptCounter..")", Duration = 3 })
+            else
+                WindUI:Notify({ Title = "❌ ผิดพลาด", Content = tostring(runErr), Duration = 4 })
+            end
+        else
+            WindUI:Notify({ Title = "❌ โค้ดผิด", Content = tostring(err), Duration = 4 })
+        end
+    end
+})
+
+MainSection:Button({
+    Title = "📥 บันทึกโค้ด",
+    Callback = function()
+        if inputScriptName == "" or inputScriptCode == "" then
+            WindUI:Notify({ Title = "⚠️ แจ้งเตือน", Content = "ไม่มีข้อมูลให้บันทึก", Duration = 2 })
+            return
+        end
+        ConfigData.SavedName = inputScriptName
+        ConfigData.SavedCode = inputScriptCode
+        SaveConfig()
+        WindUI:Notify({ Title = "✅ บันทึกแล้ว", Content = "บันทึก: "..inputScriptName, Duration = 3 })
+    end
+})
+
+MainSection:Button({
+    Title = "📂 โหลดที่บันทึกไว้",
+    Callback = function()
+        if ConfigData.SavedCode then
+            inputScriptName = ConfigData.SavedName or ""
+            inputScriptCode = ConfigData.SavedCode or ""
+            WindUI:Notify({ Title = "✅ โหลดแล้ว", Content = "โหลด: "..(ConfigData.SavedName or ""), Duration = 2 })
+        else
+            WindUI:Notify({ Title = "⚠️ ไม่มี", Content = "ไม่พบข้อมูลที่บันทึกไว้", Duration = 2 })
+        end
+    end
+})
+
+-- =========================================================================
+-- ⚙️ แท็บที่ 2: การตั้งค่า | Crosshair + AimLock + Player Mods
+-- =========================================================================
+local TabSettings = Window:Tab({ Title = "ตั้งค่า", Icon = "settings" })
+
+-- 🎮 ระบบผู้เล่น (Player Modifications)
+local PlayerModSection = TabSettings:Section({ Title = "⚡ ปรับแต่งตัวละคร", Box = true, Opened = true })
+
+PlayerModSection:Slider({
+    Title = "ความเร็วเดิน (WalkSpeed)",
+    Value = { Min = 16, Max = 150, Default = ConfigData.WalkSpeed },
+    Callback = function(v)
+        ConfigData.WalkSpeed = v
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = v
+        end
+        SaveConfig()
+    end
+})
+
+-- ผูกความเร็วตอนตัวละครเกิดใหม่
+LocalPlayer.CharacterAdded:Connect(function(char)
+    local hum = char:WaitForChild("Humanoid", 5)
+    if hum then hum.WalkSpeed = ConfigData.WalkSpeed end
+end)
+
+-- 🎯 เป้าเล็งหมุนได้ (Dynamic Crosshair)
+local CrosshairSection = TabSettings:Section({ Title = "🎯 เป้าเล็ง", Box = true })
+local CrosshairSettings = {
+    Enabled = ConfigData.CrosshairEnabled,
+    Color = Color3.fromRGB(unpack(ConfigData.CrosshairColor)),
+    Radius = 45, Size = 12, Thickness = 2, RotationSpeed = 3
+}
+
+local crosshairLines = {}
+for i = 1, 4 do
+    local l = Drawing.new("Line")
+    l.Visible = false; l.Color = CrosshairSettings.Color
+    l.Thickness = 2; l.Transparency = 1
+    table.insert(crosshairLines, l)
+end
+local crosshairCircle = Drawing.new("Circle")
+crosshairCircle.Visible = false
+crosshairCircle.Color = CrosshairSettings.Color
+crosshairCircle.Thickness = 1.5; crosshairCircle.NumSides = 32
+crosshairCircle.Radius = 45; crosshairCircle.Filled = false; crosshairCircle.Transparency = 1
+
+local crossAngle = 0
+RunService.RenderStepped:Connect(function(dt)
+    if not CrosshairSettings.Enabled then
+        for _, l in ipairs(crosshairLines) do l.Visible = false end
+        crosshairCircle.Visible = false
+        return
+    end
+    local c = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
+    crossAngle += 3*dt
+    crosshairCircle.Visible = true
+    crosshairCircle.Position = c
+    for i = 1, 4 do
+        local a = crossAngle + ((i-1)*math.pi/2)
+        local p1 = Vector2.new(c.X+math.cos(a)*4, c.Y+math.sin(a)*4)
+        local p2 = Vector2.new(c.X+math.cos(a)*16, c.Y+math.sin(a)*16)
+        crosshairLines[i].Visible = true
+        crosshairLines[i].From = p1
+        crosshairLines[i].To = p2
+    end
+end)
+
+CrosshairSection:Toggle({
+    Title = "🎯 เปิด/ปิด เป้าเล็งหมุน",
+    Default = ConfigData.CrosshairEnabled,
+    Callback = function(s)
+        CrosshairSettings.Enabled = s
+        ConfigData.CrosshairEnabled = s
+        SaveConfig()
+        WindUI:Notify({ Title = "Crosshair", Content = s and "เปิดแล้ว" or "ปิดแล้ว", Duration = 2 })
+    end
+})
+
+-- 🎮 ระบบล็อคเป้า (AimLock)
+local AimSection = TabSettings:Section({ Title = "🎮 ล็อคเป้าอัจฉริยะ", Box = true })
+local AimSettings = {
+    Enabled = ConfigData.AimLockEnabled,
+    FOV = ConfigData.FOV,
+    TeamCheck = ConfigData.TeamCheck
+}
+
+local function getClosestTarget()
+    local target, minDist = nil, AimSettings.FOV
+    local center = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p~=LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+            local hum = p.Character:FindFirstChild("Humanoid")
+            if hum and hum.Health>0 then
+                if AimSettings.TeamCheck and p.Team==LocalPlayer.Team then continue end
+                local sp, onScr = Camera:WorldToViewportPoint(p.Character.HumanoidRootPart.Position)
+                if onScr then
+                    local d = (Vector2.new(sp.X, sp.Y)-center).Magnitude
+                    if d<minDist then minDist=d; target=p.Character.HumanoidRootPart end
+                end
+            end
+        end
+    end
+    return target
+end
+
+RunService.RenderStepped:Connect(function()
+    if AimSettings.Enabled then
+        local t = getClosestTarget()
+        if t then Camera.CFrame = CFrame.new(Camera.CFrame.Position, t.Position) end
+    end
+end)
+
+AimSection:Toggle({
+    Title = "🎮 เปิด/ปิด ล็อคเป้า",
+    Default = ConfigData.AimLockEnabled,
+    Callback = function(s)
+        AimSettings.Enabled = s
+        ConfigData.AimLockEnabled = s
+        SaveConfig()
+        WindUI:Notify({ Title = "AimLock", Content = s and "เปิดแล้ว" or "ปิดแล้ว", Duration = 2 })
+    end
+})
+
+AimSection:Toggle({
+    Title = "👥 ไม่ล็อคเพื่อนในทีม",
+    Default = ConfigData.TeamCheck,
+    Callback = function(s)
+        AimSettings.TeamCheck = s
+        ConfigData.TeamCheck = s
+        SaveConfig()
+    end
+})
+
+AimSection:Slider({
+    Title = "รัศมีค้นหาเป้า (FOV)",
+    Value = { Min = 50, Max = 500, Default = ConfigData.FOV },
+    Callback = function(v) AimSettings.FOV = tonumber(v); ConfigData.FOV = tonumber(v); SaveConfig() end
+})
+
+-- =========================================================================
+-- 👁️ แท็บที่ 3: ESP มองทะลุ (ESP Suite)
+-- =========================================================================
+local TabESP = Window:Tab({ Title = "ESP มองทะลุ", Icon = "eye" })
+local ESPSect = TabESP:Section({ Title = "ตั้งค่า ESP รายละเอียดสูง", Box = true, BoxBorder = true, Opened = true })
+
+local ESPState = { Enabled = ConfigData.ESPEnabled, Box = true, Tracer = true, Name = true, Dist = true }
+local ESPDraws = {}
+
+local function ClearESP(p)
+    if ESPDraws[p] then for _, o in pairs(ESPDraws[p]) do pcall(function() o:Remove() end) end; ESPDraws[p]=nil end
+end
+
+RunService.RenderStepped:Connect(function()
+    if not ESPState.Enabled then for p in pairs(ESPDraws) do ClearESP(p) end return end
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p~=LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+            local c = p.Character
+            local hrp = c.HumanoidRootPart
+            local hum = c:FindFirstChild("Humanoid")
+            if not hum or hum.Health<=0 then ClearESP(p) goto continue end
+            
+            if not ESPDraws[p] then
+                ESPDraws[p] = {
+                    Box = Drawing.new("Square"),
+                    Line = Drawing.new("Line"),
+                    Text = Drawing.new("Text")
+                }
+                ESPDraws[p].Box.Thickness=1.5; ESPDraws[p].Box.Filled=false; ESPDraws[p].Box.Color=Color3.fromRGB(138,43,226)
+                ESPDraws[p].Line.Thickness=1; ESPDraws[p].Line.Color=Color3.fromRGB(138,43,226)
+                ESPDraws[p].Text.Size=14; ESPDraws[p].Text.Center=true; ESPDraws[p].Text.Outline=true; ESPDraws[p].Text.Color=Color3.new(1,1,1)
+            end
+            
+            local v, onScr = Camera:WorldToViewportPoint(hrp.Position)
+            local d = (Camera.CFrame.Position-hrp.Position).Magnitude
+            local head = c:FindFirstChild("Head")
+            local tV = head and Camera:WorldToViewportPoint(head.Position+Vector3.new(0,.5,0)) or v
+            local bV = Camera:WorldToViewportPoint(hrp.Position-Vector3.new(0,3,0))
+            local h = math.abs(tV.Y-bV.Y)
+            local w = h/2
+            
+            ESPDraws[p].Box.Visible = onScr and ESPState.Box
+            ESPDraws[p].Line.Visible = onScr and ESPState.Tracer
+            ESPDraws[p].Text.Visible = onScr and ESPState.Name
+            
+            if onScr then
+                if ESPState.Box then ESPDraws[p].Box.Size=Vector2.new(w,h); ESPDraws[p].Box.Position=Vector2.new(v.X-w/2,tV.Y) end
+                if ESPState.Tracer then ESPDraws[p].Line.From=Vector2.new(Camera.ViewportSize.X/2,Camera.ViewportSize.Y); ESPDraws[p].Line.To=Vector2.new(v.X,bV.Y) end
+                if ESPState.Name then ESPDraws[p].Text.Text=p.Name..(ESPState.Dist and (" ["..math.floor(d).."m]") or ""); ESPDraws[p].Text.Position=Vector2.new(v.X,tV.Y-18) end
+            end
+            ::continue::
+        else ClearESP(p) end
+    end
+end)
+
+Players.PlayerRemoving:Connect(ClearESP)
+
+ESPSect:Toggle({
+    Title = "👁️ เปิด/ปิด ESP ทั้งหมด",
+    Default = ConfigData.ESPEnabled,
+    Callback = function(s)
+        ESPState.Enabled = s
+        ConfigData.ESPEnabled = s
+        SaveConfig()
+        WindUI:Notify({ Title = "ESP", Content = s and "เปิดระบบแล้ว" or "ปิดระบบแล้ว", Duration = 2 })
+    end
+})
+ESPSect:Toggle({ Title = "📦 แสดงกรอบ", Default = true, Callback = function(s) ESPState.Box=s end })
+ESPSect:Toggle({ Title = "📏 แสดงเส้นโยง", Default = true, Callback = function(s) ESPState.Tracer=s end })
+ESPSect:Toggle({ Title = "🏷️ แสดงชื่อ+ระยะ", Default = true, Callback = function(s) ESPState.Name=s; ESPState.Dist=s end })
+
+-- =========================================================================
+-- 📊 แท็บที่ 4: สถานะเซิร์ฟเวอร์ + Fullbright + ย้ายเซิร์ฟ + Anti-AFK
+-- =========================================================================
+local TabInfo = Window:Tab({ Title = "สถานะ/เซิร์ฟ", Icon = "info" })
+local InfoSect = TabInfo:Section({ Title = "เครื่องมือเซิร์ฟเวอร์ & ระบบ", Box = true, BoxBorder = true, Opened = true })
+
+-- ระบบสว่างรอบทิศทาง (Fullbright)
+InfoSect:Toggle({
+    Title = "💡 เปิดแสงสว่างสูงสุด (Fullbright)",
+    Default = ConfigData.FullbrightEnabled,
+    Callback = function(s)
+        ConfigData.FullbrightEnabled = s
+        SaveConfig()
+        if s then
+            Lighting.Brightness = 2
+            Lighting.ClockTime = 14
+            Lighting.GlobalShadows = false
+            WindUI:Notify({ Title = "Fullbright", Content = "เปิดโหมดมองเห็นในที่มืดแล้ว", Duration = 2 })
+        else
+            Lighting.GlobalShadows = true
+            WindUI:Notify({ Title = "Fullbright", Content = "ปิดโหมดแสงสว่างแล้ว", Duration = 2 })
+        end
+    end
+})
+
+-- ปุ่มย้ายเซิร์ฟเวอร์ (Server Hop)
+InfoSect:Button({
+    Title = "🔀 ย้ายเซิร์ฟเวอร์อื่น (Server Hop)",
+    Callback = function()
+        WindUI:Notify({ Title = "Server Hop", Content = "กำลังค้นหาและย้ายเซิร์ฟ...", Duration = 3 })
+        pcall(function()
+            local servers = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100"))
+            for _, s in ipairs(servers.data) do
+                if s.playing < s.maxPlayers and s.id ~= game.JobId then
+                    TeleportService:TeleportToPlaceInstance(game.PlaceId, s.id, LocalPlayer)
+                    return
+                end
+            end
+        end)
+    end
+})
+
+-- ปุ่มรีเซิร์ฟเวอร์ (Rejoin)
+InfoSect:Button({
+    Title = "🔄 รีเซิร์ฟเวอร์เดิม (Rejoin)",
+    Callback = function()
+        WindUI:Notify({ Title = "Rejoin", Content = "กำลังเข้าสู่เซิร์ฟเดิม...", Duration = 2 })
+        TeleportService:Teleport(game.PlaceId, LocalPlayer)
+    end
+})
+
+-- คัดลอก JobId
+InfoSect:Button({
+    Title = "📋 คัดลอก Server JobID",
+    Callback = function()
+        if setclipboard then
+            setclipboard(game.JobId)
+            WindUI:Notify({ Title = "✅ สำเร็จ", Content = "คัดลอก JobID แล้ว", Duration = 2 })
+        else
+            WindUI:Notify({ Title = "❌ ไม่รองรับ", Content = "Executor ไม่มีฟังก์ชัน setclipboard", Duration = 2 })
+        end
+    end
+})
+
+-- FPS & Ping Display Tags
+local FPSTag = Window:Tag({ Title = "FPS: 0", Color = Color3.fromRGB(100,150,255) })
+local PingTag = Window:Tag({ Title = "Ping: 0ms", Color = Color3.fromRGB(100,200,255) })
+
+do
+    local last, frames = tick(), 0
+    RunService.RenderStepped:Connect(function()
+        frames += 1
+        local now = tick()
+        if now-last >= 1 then
+            local fps = math.floor(frames/(now-last))
+            FPSTag:SetTitle("FPS: "..fps)
+            FPSTag:SetColor(fps>=50 and Color3.fromRGB(0,255,0) or fps>=30 and Color3.fromRGB(255,200,0) or Color3.fromRGB(255,0,0))
+            frames, last = 0, now
+        end
+    end)
+    task.spawn(function()
+        while task.wait(2) do
+            local ok, ping = pcall(function() return math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()) end)
+            if ok and ping then
+                PingTag:SetTitle("Ping: "..ping.."ms")
+                PingTag:SetColor(ping<=50 and Color3.fromRGB(0,255,0) or ping<=100 and Color3.fromRGB(255,200,0) or Color3.fromRGB(255,0,0))
+            end
+        end
+    end)
+end
+
+-- กันหลุด AFK
+local antiAFKConn
+InfoSect:Toggle({
+    Title = "🛡️ กันหลุด (Anti-AFK)",
+    Default = ConfigData.AntiAFKEnabled,
+    Callback = function(s)
+        local vu = game:GetService("VirtualUser")
+        if s then
+            antiAFKConn = LocalPlayer.Idled:Connect(function()
+                vu:Button2Down(Vector2.new(), Camera.CFrame)
+                task.wait(1)
+                vu:Button2Up(Vector2.new(), Camera.CFrame)
+            end)
+            ConfigData.AntiAFKEnabled = true
+            WindUI:Notify({ Title = "Anti-AFK", Content = "เปิดกันหลุดแล้ว", Duration = 2 })
+        else
+            if antiAFKConn then antiAFKConn:Disconnect() antiAFKConn = nil end
+            ConfigData.AntiAFKEnabled = false
+            WindUI:Notify({ Title = "Anti-AFK", Content = "ปิดกันหลุดแล้ว", Duration = 2 })
+        end
+        SaveConfig()
+    end
+})
+
+print("✅ RTS-HUB v5.2 โหลดเสร็จสมบูรณ์แบบพร้อมใช้งาน")
