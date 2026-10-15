@@ -1,9 +1,9 @@
 -- =========================================================================
--- RTS HUB v5.0 — ULTIMATE ADVANCED EDITION (With Ping & FPS Tags)
+-- RTS HUB v5.0 — ULTIMATE ORGANIZED & ADVANCED EDITION
 -- พัฒนาโดย scope scout (Delta Executor & Roblox Latest Optimized)
 -- =========================================================================
 
--- โหลด WindUI อย่างปลอดภัยและเสถียรที่สุด
+-- 1. โหลด WindUI อย่างปลอดภัย
 local _version = "1.6.6"
 local success, WindUI = pcall(function()
     return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/" .. _version .. "/main.lua"))()
@@ -20,12 +20,10 @@ if not success or not WindUI then
     return
 end
 
--- =========================================================================
--- 🎨 ธีมสีดำ เทา ขาว น้ำเงิน (Dark Blue Custom Theme)
--- =========================================================================
+-- 2. ธีมสี (Dark Blue Custom Theme)
 pcall(function()
     WindUI:AddTheme({
-        Name = "RTS_DarkBlue_Advanced",
+        Name = "RTS_OrganizedTheme",
         Primary = Color3.fromHex("#3b82f6"),
         White = Color3.new(1,1,1),
         Black = Color3.new(0,0,0),
@@ -40,14 +38,12 @@ pcall(function()
         Slider = Color3.fromHex("#3b82f6"),
         Notification = Color3.fromHex("#0f172a"),
     })
-    WindUI:SetTheme("RTS_DarkBlue_Advanced")
+    WindUI:SetTheme("RTS_OrganizedTheme")
 end)
 
--- =========================================================================
--- 🔑 ระบบหน้าต่างหลัก และ Key System
--- =========================================================================
+-- 3. สร้างหน้าต่างหลักและ Key System
 local Window = WindUI:CreateWindow({
-    Title = "RTS-HUB v5.0 Advanced",
+    Title = "RTS-HUB v5.0 Organized",
     Icon = "dragon",
     Author = "by scope scout",
     KeySystem = {
@@ -62,103 +58,59 @@ local Window = WindUI:CreateWindow({
     }
 })
 
--- บริการหลักและตัวแปรระบบ
-local HttpService = game:GetService("HttpService")
+-- บริการหลัก
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
--- =========================================================================
--- 📊 ระบบ TAG แสดงสถานะ PING & FPS บน Window
--- =========================================================================
-local PingTag = Window:Tag({
-    Title = "Ping: 0ms",
-    Color = Color3.fromRGB(100, 200, 255),
-})
-
+-- 4. ระบบ TAG (Ping & FPS)
+local PingTag = Window:Tag({ Title = "Ping: 0ms", Color = Color3.fromRGB(100, 200, 255) })
 task.spawn(function()
     while true do
-        local success, ping = pcall(function()
-            local Stats = game:GetService("Stats")
-            local pingValue = Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
-            return math.floor(pingValue)
+        local ok, ping = pcall(function()
+            return math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue())
         end)
-        
-        if success and ping then
+        if ok and ping then
             PingTag:SetTitle("Ping: " .. ping .. "ms")
-            
-            if ping <= 50 then
-                PingTag:SetColor(Color3.fromRGB(0, 255, 0)) -- Green
-            elseif ping <= 100 then
-                PingTag:SetColor(Color3.fromRGB(255, 200, 0)) -- Yellow
-            elseif ping <= 200 then
-                PingTag:SetColor(Color3.fromRGB(255, 150, 0)) -- Orange
-            else
-                PingTag:SetColor(Color3.fromRGB(255, 0, 0)) -- Red
-            end
+            if ping <= 50 then PingTag:SetColor(Color3.fromRGB(0, 255, 0))
+            elseif ping <= 100 then PingTag:SetColor(Color3.fromRGB(255, 200, 0))
+            elseif ping <= 200 then PingTag:SetColor(Color3.fromRGB(255, 150, 0))
+            else PingTag:SetColor(Color3.fromRGB(255, 0, 0)) end
         end
-        
         task.wait(2)
     end
 end)
 
-local FPSTag = Window:Tag({
-    Title = "FPS: 0",
-    Color = Color3.fromRGB(100, 150, 255),
-})
-
-local lastUpdate = tick()
-local frameCount = 0
-
+local FPSTag = Window:Tag({ Title = "FPS: 0", Color = Color3.fromRGB(100, 150, 255) })
+local lastUpdate, frameCount = tick(), 0
 RunService.RenderStepped:Connect(function()
     frameCount = frameCount + 1
     local now = tick()
-    
     if now - lastUpdate >= 1 then
         local fps = math.floor(frameCount / (now - lastUpdate))
         FPSTag:SetTitle("FPS: " .. fps)
-        
-        if fps >= 50 then
-            FPSTag:SetColor(Color3.fromRGB(0, 255, 0)) -- Green
-        elseif fps >= 30 then
-            FPSTag:SetColor(Color3.fromRGB(255, 200, 0)) -- Yellow
-        else
-            FPSTag:SetColor(Color3.fromRGB(255, 0, 0)) -- Red
-        end
-        
-        frameCount = 0
-        lastUpdate = now
+        if fps >= 50 then FPSTag:SetColor(Color3.fromRGB(0, 255, 0))
+        elseif fps >= 30 then FPSTag:SetColor(Color3.fromRGB(255, 200, 0))
+        else FPSTag:SetColor(Color3.fromRGB(255, 0, 0)) end
+        frameCount, lastUpdate = 0, now
     end
 end)
 
--- การแจ้งเตือนสถานะสำเร็จ
-WindUI:Notify({
-    Title = "Success",
-    Content = "Operation completed successfully",
-    Duration = 3
-})
+WindUI:Notify({ Title = "Success", Content = "โหลดระบบสำเร็จพร้อมใช้งาน", Duration = 3 })
 
--- =========================================================================
--- 🔘 สร้างปุ่มซิปล็อค (Floating Ziplock Button) อยู่เหนือปุ่มกระโดดซ้ายบน
--- =========================================================================
+-- 5. ปุ่มซิปล็อคลอย (Floating Ziplock Button)
 local ZiplockGui = Instance.new("ScreenGui")
 ZiplockGui.Name = "RTS_ZiplockGui"
 ZiplockGui.ResetOnSpawn = false
 ZiplockGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-if syn and syn.protect_gui then
-    syn.protect_gui(ZiplockGui)
-    ZiplockGui.Parent = CoreGui
-elseif gethui then
-    ZiplockGui.Parent = gethui()
-else
-    ZiplockGui.Parent = CoreGui
-end
+if syn and syn.protect_gui then syn.protect_gui(ZiplockGui); ZiplockGui.Parent = CoreGui
+elseif gethui then ZiplockGui.Parent = gethui()
+else ZiplockGui.Parent = CoreGui end
 
 local ZiplockBtn = Instance.new("TextButton")
-ZiplockBtn.Name = "ZiplockButton"
 ZiplockBtn.Size = UDim2.new(0, 50, 0, 50)
 ZiplockBtn.Position = UDim2.new(0.15, 0, 0.65, 0)
 ZiplockBtn.BackgroundColor3 = Color3.fromRGB(15, 23, 42)
@@ -171,19 +123,16 @@ ZiplockBtn.Draggable = true
 ZiplockBtn.Visible = false
 ZiplockBtn.Parent = ZiplockGui
 
-local ZCorner = Instance.new("UICorner")
-ZCorner.CornerRadius = UDim.new(0, 10)
-ZCorner.Parent = ZiplockBtn
-
-local ZStroke = Instance.new("UIStroke")
+Instance.new("UICorner", ZiplockBtn).CornerRadius = UDim.new(0, 10)
+local ZStroke = Instance.new("UIStroke", ZiplockBtn)
 ZStroke.Color = Color3.fromRGB(59, 130, 246)
 ZStroke.Thickness = 2
-ZStroke.Parent = ZiplockBtn
 
 -- =========================================================================
--- 🗂️ สร้างแท็บทั้งหมดตามโครงสร้าง v5
+-- 🗂️ สร้างแท็บทั้งหมด (Tabs)
 -- =========================================================================
 local TabPrayer = Window:Tab({ Title = "prayer", Icon = "heart" })
+local TabPlayers = Window:Tab({ Title = "Players", Icon = "users" }) -- แท็บจัดการผู้เล่นใหม่
 local TabTP = Window:Tab({ Title = "TP", Icon = "navigation" })
 local TabCombat = Window:Tab({ Title = "Kill", Icon = "sword" })
 local TabAdmin = Window:Tab({ Title = "Admin", Icon = "shield" })
@@ -191,15 +140,13 @@ local TabESP = Window:Tab({ Title = "ESP & Teleport", Icon = "eye" })
 local TabSettings = Window:Tab({ Title = "Settings", Icon = "settings" })
 
 -- =========================================================================
--- 1. TAB: prayer (ปรับแต่งตัวละคร / ค่าความเร็ว)
+-- TAB 1: prayer (ตัวละครพื้นฐาน)
 -- =========================================================================
 local PrayerSec = TabPrayer:Section({ Title = "ระบบตัวละครพื้นฐาน", Box = true, Opened = true })
 
 PrayerSec:Slider({
     Title = "ความเร็วเดิน (WalkSpeed)",
-    Default = 16,
-    Min = 16,
-    Max = 300,
+    Value = { Min = 16, Max = 300, Default = 16 },
     Callback = function(v)
         pcall(function()
             if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
@@ -211,9 +158,7 @@ PrayerSec:Slider({
 
 PrayerSec:Slider({
     Title = "พลังกระโดด (JumpPower)",
-    Default = 50,
-    Min = 50,
-    Max = 300,
+    Value = { Min = 50, Max = 300, Default = 50 },
     Callback = function(v)
         pcall(function()
             if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
@@ -224,7 +169,31 @@ PrayerSec:Slider({
 })
 
 -- =========================================================================
--- 2. TAB: TP (ระบบเทเลพอร์ตด่วน)
+-- TAB 2: Players (จัดการผู้เล่นในเซิร์ฟเวอร์)
+-- =========================================================================
+local PlayersSec = TabPlayers:Section({ Title = "จัดการข้อมูลผู้เล่น", Box = true, Opened = true })
+
+PlayersSec:Button({
+    Title = "👥 รีเฟรชรายชื่อผู้เล่นในเซิร์ฟเวอร์",
+    Callback = function()
+        local count = #Players:GetPlayers()
+        WindUI:Notify({ Title = "Players Info", Content = "จำนวนผู้เล่นทั้งหมดในเซิร์ฟเวอร์: " .. count .. " คน", Duration = 3 })
+    end
+})
+
+PlayersSec:Button({
+    Title = "🌀 รีเซ็ตตัวละครตัวเอง (Respawn)",
+    Callback = function()
+        pcall(function()
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                LocalPlayer.Character.Humanoid.Health = 0
+            end
+        end)
+    end
+})
+
+-- =========================================================================
+-- TAB 3: TP (จุดวาร์ปด่วน)
 -- =========================================================================
 local TPSec = TabTP:Section({ Title = "จุดวาร์ปด่วน", Box = true, Opened = true })
 
@@ -240,13 +209,11 @@ TPSec:Button({
 })
 
 -- =========================================================================
--- 3. TAB: Kill (ระบบซิปล็อคเป้าหมาย / Ziplock Aimbot)
+-- TAB 4: Kill (ระบบซิปล็อคเป้าหมาย)
 -- =========================================================================
 local KillSec = TabCombat:Section({ Title = "ระบบการต่อสู้ (Ziplock Lock)", Box = true, Opened = true })
 
-local ZiplockActive = false
-local IsLockedOn = false
-local AimFOV = 150
+local ZiplockActive, IsLockedOn, AimFOV = false, false, 150
 
 ZiplockBtn.MouseButton1Down:Connect(function()
     if ZiplockActive then
@@ -258,8 +225,7 @@ end)
 
 local function getClosestTarget()
     local target, minDist = nil, AimFOV
-    local vp = Camera.ViewportSize
-    local center = Vector2.new(vp.X / 2, vp.Y / 2)
+    local center = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
     for _, p in ipairs(Players:GetPlayers()) do
         if p ~= LocalPlayer and p.Character then
             local hrp = p.Character:FindFirstChild("HumanoidRootPart")
@@ -268,10 +234,7 @@ local function getClosestTarget()
                 local sp, onScr = Camera:WorldToViewportPoint(hrp.Position)
                 if onScr then
                     local d = (Vector2.new(sp.X, sp.Y) - center).Magnitude
-                    if d < minDist then
-                        minDist = d
-                        target = hrp
-                    end
+                    if d < minDist then minDist = d; target = hrp end
                 end
             end
         end
@@ -301,32 +264,20 @@ KillSec:Toggle({
 
 KillSec:Slider({
     Title = "รัศมีองศาล็อคเป้า (FOV)",
-    Default = 150,
-    Min = 50,
-    Max = 500,
-    Callback = function(v)
-        AimFOV = v
-    end
+    Value = { Min = 50, Max = 500, Default = 150 },
+    Callback = function(v) AimFOV = v end
 })
 
 -- =========================================================================
--- 4. TAB: Admin (ช่องรันสคริปต์และเครื่องมือแอดมิน)
+-- TAB 5: Admin (คอนโซลรันสคริปต์)
 -- =========================================================================
 local AdminSec = TabAdmin:Section({ Title = "Script Executor Console", Box = true, Opened = true })
-
-local inputScriptName = ""
 local inputScriptCode = ""
-
-AdminSec:Input({
-    Title = "ชื่อสคริปต์",
-    Placeholder = "พิมพ์ชื่อที่นี่...",
-    Callback = function(t) inputScriptName = t end
-})
 
 AdminSec:Input({
     Title = "โค้ดสคริปต์ (Loadstring)",
     Placeholder = "loadstring(game:HttpGet('...'))()",
-    Callback = function(t) inputScriptCode = t end
+    Callback = function(text) inputScriptCode = text end
 })
 
 AdminSec:Button({
@@ -339,31 +290,23 @@ AdminSec:Button({
         local fn, err = loadstring(inputScriptCode)
         if fn then
             local ok, runErr = pcall(fn)
-            if ok then
-                WindUI:Notify({ Title = "✅ สำเร็จ", Content = "รันสคริปต์สำเร็จเรียบร้อย!", Duration = 3 })
-            else
-                WindUI:Notify({ Title = "❌ ผิดพลาด", Content = tostring(runErr), Duration = 4 })
-            end
-        else
-            WindUI:Notify({ Title = "❌ โค้ดผิดพลาด", Content = tostring(err), Duration = 4 })
-        end
+            if ok then WindUI:Notify({ Title = "✅ สำเร็จ", Content = "รันสคริปต์สำเร็จเรียบร้อย!", Duration = 3 })
+            else WindUI:Notify({ Title = "❌ ผิดพลาด", Content = tostring(runErr), Duration = 4 }) end
+        else WindUI:Notify({ Title = "❌ โค้ดผิดพลาด", Content = tostring(err), Duration = 4 }) end
     end
 })
 
 -- =========================================================================
--- 5. TAB: ESP & Teleport (ESP สำหรับ Player และ Monster พร้อมชื่อ ชนิด ระยะทาง)
+-- TAB 6: ESP & Teleport (ESP ผู้เล่นและมอนสเตอร์)
 -- =========================================================================
 local ESPSect = TabESP:Section({ Title = "ระบบมองทะลุขั้นสูง (Player & Monster ESP)", Box = true, Opened = true })
-
 local ESPState = { Enabled = false, Box = true, Tracer = true, Info = true }
 local ESPDraws = {}
 
 local function ClearESP(obj)
     if ESPDraws[obj] then
         pcall(function()
-            for _, o in pairs(ESPDraws[obj]) do
-                if o and typeof(o.Remove) == "function" then o:Remove() end
-            end
+            for _, o in pairs(ESPDraws[obj]) do if o and typeof(o.Remove) == "function" then o:Remove() end end
         end)
         ESPDraws[obj] = nil
     end
@@ -377,7 +320,6 @@ RunService.RenderStepped:Connect(function()
 
     pcall(function()
         local targets = {}
-
         for _, p in ipairs(Players:GetPlayers()) do
             if p ~= LocalPlayer and p.Character then
                 table.insert(targets, {Instance = p.Character, Name = p.Name, Type = "Player", Color = Color3.fromRGB(59, 130, 246)})
@@ -386,32 +328,21 @@ RunService.RenderStepped:Connect(function()
 
         for _, v in ipairs(workspace:GetDescendants()) do
             if v:IsA("Model") and v:FindFirstChild("Humanoid") and v:FindFirstChild("HumanoidRootPart") then
-                local isPlayerChar = Players:GetPlayerFromCharacter(v)
-                if not isPlayerChar and v ~= LocalPlayer.Character then
+                if not Players:GetPlayerFromCharacter(v) and v ~= LocalPlayer.Character then
                     table.insert(targets, {Instance = v, Name = v.Name, Type = "Monster", Color = Color3.fromRGB(239, 68, 68)})
                 end
             end
         end
 
         for _, target in ipairs(targets) do
-            local char = target.Instance
-            local hrp = char:FindFirstChild("HumanoidRootPart")
-            local hum = char:FindFirstChild("Humanoid")
-
-            if not hrp or not hum or hum.Health <= 0 then
-                ClearESP(char)
-                continue
-            end
+            local char, hrp, hum = target.Instance, target.Instance:FindFirstChild("HumanoidRootPart"), target.Instance:FindFirstChild("Humanoid")
+            if not hrp or not hum or hum.Health <= 0 then ClearESP(char); continue end
 
             if not ESPDraws[char] and Drawing then
-                ESPDraws[char] = {
-                    Box = Drawing.new("Square"),
-                    Line = Drawing.new("Line"),
-                    Text = Drawing.new("Text")
-                }
-                ESPDraws[char].Box.Thickness = 1.5; ESPDraws[char].Box.Filled = false
+                ESPDraws[char] = { Box = Drawing.new("Square"), Line = Drawing.new("Line"), Text = Drawing.new("Text") }
+                ESPDraws[char].Box.Thickness, ESPDraws[char].Box.Filled = 1.5, false
                 ESPDraws[char].Line.Thickness = 1
-                ESPDraws[char].Text.Size = 13; ESPDraws[char].Text.Center = true; ESPDraws[char].Text.Outline = true; ESPDraws[char].Text.Color = Color3.new(1, 1, 1)
+                ESPDraws[char].Text.Size, ESPDraws[char].Text.Center, ESPDraws[char].Text.Outline, ESPDraws[char].Text.Color = 13, true, true, Color3.new(1,1,1)
             end
 
             local draws = ESPDraws[char]
@@ -420,8 +351,7 @@ RunService.RenderStepped:Connect(function()
                 local head = char:FindFirstChild("Head")
                 local tV = head and Camera:WorldToViewportPoint(head.Position + Vector3.new(0, 0.5, 0)) or vPos
                 local bV = Camera:WorldToViewportPoint(hrp.Position - Vector3.new(0, 3, 0))
-                local h = math.abs(tV.Y - bV.Y)
-                local w = h / 2
+                local h, w = math.abs(tV.Y - bV.Y), math.abs(tV.Y - bV.Y) / 2
 
                 draws.Box.Visible = onScr and ESPState.Box
                 draws.Box.Color = target.Color
@@ -430,15 +360,8 @@ RunService.RenderStepped:Connect(function()
                 draws.Text.Visible = onScr and ESPState.Info
 
                 if onScr then
-                    if ESPState.Box then
-                        draws.Box.Size = Vector2.new(w, h)
-                        draws.Box.Position = Vector2.new(vPos.X - w / 2, tV.Y)
-                    end
-                    if ESPState.Tracer then
-                        local vp = Camera.ViewportSize
-                        draws.Line.From = Vector2.new(vp.X / 2, vp.Y)
-                        draws.Line.To = Vector2.new(vPos.X, bV.Y)
-                    end
+                    if ESPState.Box then draws.Box.Size = Vector2.new(w, h); draws.Box.Position = Vector2.new(vPos.X - w / 2, tV.Y) end
+                    if ESPState.Tracer then draws.Line.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y); draws.Line.To = Vector2.new(vPos.X, bV.Y) end
                     if ESPState.Info then
                         local dist = math.floor((hrp.Position - Camera.CFrame.Position).Magnitude)
                         draws.Text.Text = "[" .. target.Type .. "] " .. target.Name .. " (" .. dist .. "m)"
@@ -450,21 +373,13 @@ RunService.RenderStepped:Connect(function()
     end)
 end)
 
-ESPSect:Toggle({
-    Title = "👁️ เปิด/ปิด ESP ขั้นสูง",
-    Default = false,
-    Callback = function(s)
-        ESPState.Enabled = s
-        WindUI:Notify({ Title = "ESP System", Content = s and "เปิดการทำงาน ESP" or "ปิดการทำงาน ESP", Duration = 2 })
-    end
-})
-
+ESPSect:Toggle({ Title = "👁️ เปิด/ปิด ESP ขั้นสูง", Default = false, Callback = function(s) ESPState.Enabled = s end })
 ESPSect:Toggle({ Title = "📦 แสดงกรอบกล่อง (Box)", Default = true, Callback = function(s) ESPState.Box = s end })
 ESPSect:Toggle({ Title = "📏 แสดงเส้นโยง (Tracer)", Default = true, Callback = function(s) ESPState.Tracer = s end })
 ESPSect:Toggle({ Title = "🏷️ แสดงชื่อ ชนิด และระยะทาง", Default = true, Callback = function(s) ESPState.Info = s end })
 
 -- =========================================================================
--- 6. TAB: Settings (ตั้งค่าหน้าต่างระบบ)
+-- TAB 7: Settings (ตั้งค่าระบบ)
 -- =========================================================================
 local SettingsSec = TabSettings:Section({ Title = "การตั้งค่าหน้าต่างระบบ", Box = true, Opened = true })
 
