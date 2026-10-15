@@ -1,0 +1,85 @@
+-- =========================================================================
+-- RTS HUB v5 — SECURE REALTIME LOADER (Delta Executor Optimized)
+-- พัฒนาโดย scope scout
+-- =========================================================================
+
+local _version = "1.6.6"
+local success, WindUI = pcall(function()
+    return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/" .. _version .. "/main.lua"))()
+end)
+
+if not success or not WindUI then
+    success, WindUI = pcall(function()
+        return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+    end)
+end
+
+if not success or not WindUI then
+    warn("❌ ไม่สามารถโหลด WindUI ได้! ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต")
+    return
+end
+
+-- =========================================================================
+-- 🎨 ธีมสีดำ เทา ขาว น้ำเงิน (Dark Blue Custom Theme)
+-- =========================================================================
+pcall(function()
+    WindUI:AddTheme({
+        Name = "RTS_RealtimeSecure",
+        Primary = Color3.fromHex("#3b82f6"),
+        White = Color3.new(1,1,1),
+        Black = Color3.new(0,0,0),
+        Dialog = Color3.fromHex("#0f172a"),
+        Background = Color3.fromHex("#090d16"),
+        BackgroundTransparency = 0,
+        Hover = Color3.fromHex("#3b82f6"),
+        WindowBackground = Color3.fromHex("#090d16"),
+        WindowTopbarTitle = Color3.fromHex("#FFFFFF"),
+        WindowTopbarAuthor = Color3.fromHex("#94a3b8"),
+        Toggle = Color3.fromHex("#3b82f6"),
+        Slider = Color3.fromHex("#3b82f6"),
+        Notification = Color3.fromHex("#0f172a"),
+    })
+    WindUI:SetTheme("RTS_RealtimeSecure")
+end)
+
+-- =========================================================================
+-- 🛡️ ระบบการจัดการความเสถียรและการเรียกใช้งานสคริปต์ (Execution Engine)
+-- =========================================================================
+local HubManager = {}
+
+function HubManager:SafeExecute(name, func)
+    local ok, err = pcall(func)
+    if not ok then
+        warn("⚠️ [RTS HUB Error in " .. tostring(name) .. "]: " .. tostring(err))
+        pcall(function()
+            WindUI:Notify({
+                Title = "⚠️ แจ้งเตือนข้อผิดพลาด",
+                Content = "จุดที่เกิดปัญหา: " .. tostring(name),
+                Duration = 3
+            })
+        end)
+    end
+end
+
+-- =========================================================================
+-- 🌐 ทำการดึงและรันสคริปต์จากลิงก์ของคุณแบบเรียลไทม์ผ่านระบบป้องกัน
+-- =========================================================================
+HubManager:SafeExecute("RealtimeTargetLoader", function()
+    -- แจ้งเตือนสถานะเริ่มต้นกำลังเชื่อมต่อ
+    WindUI:Notify({
+        Title = "RTS-HUB v5",
+        Content = "🔄 กำลังเชื่อมต่อและดึงข้อมูลแบบเรียลไทม์...",
+        Duration = 2
+    })
+
+    -- ดึงโค้ดและรันจากลิงก์ที่คุณกำหนด
+    local remoteScript = loadstring(game:HttpGet("https://raw.githubusercontent.com/hacker0030mp/Hac/refs/heads/main/RTS-HUB%20v5%20-%20Complete%20Edition"))()
+    
+    if remoteScript then
+        WindUI:Notify({
+            Title = "RTS-HUB v5",
+            Content = "✅ โหลดและเข้าถึงสคริปต์เรียลไทม์สำเร็จ!",
+            Duration = 3
+        })
+    end
+end)
