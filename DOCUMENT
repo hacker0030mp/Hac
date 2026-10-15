@@ -1,6 +1,6 @@
 -- =========================================================================
--- RTS HUB v5 — NEW MODERN DASHBOARD STYLE (Custom Native UI)
--- พัฒนาโดย scope scout
+-- RTS HUB v5 — INDEPENDENT CUSTOM NATIVE UI & SEPARATED BUTTONS
+-- พัฒนาโดย scope scout (Delta Executor Optimized)
 -- =========================================================================
 
 local Players = game:GetService("Players")
@@ -8,14 +8,14 @@ local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
--- ป้องกันหน้าต่างซ้ำซ้อน
-if CoreGui:FindFirstChild("RTSHubNewUI") then
-    CoreGui.RTSHubNewUI:Destroy()
+-- ป้องกัน GUI ซ้ำซ้อน
+if CoreGui:FindFirstChild("RTSHubCustomSystem") then
+    CoreGui.RTSHubCustomSystem:Destroy()
 end
 
 -- สร้าง ScreenGui หลัก
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "RTSHubNewUI"
+ScreenGui.Name = "RTSHubCustomSystem"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
@@ -29,131 +29,186 @@ else
 end
 
 -- =========================================================================
--- 🔲 หน้าต่างหลักสไตล์ Dashboard (ดีไซน์ใหม่)
+-- 🔘 ปุ่มย่อ/ขยายหน้าต่างแบบลอย (Floating Toggle Icon Button)
+-- =========================================================================
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Name = "RTS_ToggleButton"
+ToggleButton.Size = UDim2.new(0, 45, 0, 45)
+ToggleButton.Position = UDim2.new(0, 20, 0.5, -22)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(15, 23, 42)
+ToggleButton.Text = "RTS"
+ToggleButton.TextColor3 = Color3.fromRGB(59, 130, 246)
+ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.TextSize = 14
+ToggleButton.Active = true
+ToggleButton.Draggable = true
+ToggleButton.Visible = false
+ToggleButton.Parent = ScreenGui
+
+local ToggleCorner = Instance.new("UICorner")
+ToggleCorner.CornerRadius = UDim.new(0, 10)
+ToggleCorner.Parent = ToggleButton
+
+local ToggleStroke = Instance.new("UIStroke")
+ToggleStroke.Color = Color3.fromRGB(59, 130, 246)
+ToggleStroke.Thickness = 2
+ToggleStroke.Parent = ToggleButton
+
+-- =========================================================================
+-- 🔲 หน้าต่างหลักทรงสี่เหลี่ยม (Custom Native Window Frame)
 -- =========================================================================
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 580, 0, 360)
-MainFrame.Position = UDim2.new(0.5, -290, 0.5, -180)
-MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 14) -- ดำสนิทโมเดิร์น
+MainFrame.Size = UDim2.new(0, 520, 0, 380)
+MainFrame.Position = UDim2.new(0.5, -260, 0.5, -190)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 23, 42)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.Parent = ScreenGui
 
 local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 12)
+MainCorner.CornerRadius = UDim.new(0, 10)
 MainCorner.Parent = MainFrame
 
 local MainStroke = Instance.new("UIStroke")
-MainStroke.Color = Color3.fromRGB(45, 45, 55) -- ขอบเทาเข้มตัดน้ำเงิน
+MainStroke.Color = Color3.fromRGB(59, 130, 246)
 MainStroke.Thickness = 1.5
 MainStroke.Parent = MainFrame
 
 -- =========================================================================
--- 📋 แถบ Sidebar ด้านซ้าย (เมนูเลือกฟังก์ชัน)
+-- 📌 ส่วนหัวหน้าต่าง Topbar
 -- =========================================================================
-local Sidebar = Instance.new("Frame")
-Sidebar.Size = UDim2.new(0, 160, 1, 0)
-Sidebar.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
-Sidebar.BorderSizePixel = 0
-Sidebar.Parent = MainFrame
+local Topbar = Instance.new("Frame")
+Topbar.Size = UDim2.new(1, 0, 0, 40)
+Topbar.BackgroundColor3 = Color3.fromRGB(9, 13, 22)
+Topbar.BorderSizePixel = 0
+Topbar.Parent = MainFrame
 
-local SidebarCorner = Instance.new("UICorner")
-SidebarCorner.CornerRadius = UDim.new(0, 12)
-SidebarCorner.Parent = Sidebar
+local TopbarCorner = Instance.new("UICorner")
+TopbarCorner.CornerRadius = UDim.new(0, 10)
+TopbarCorner.Parent = Topbar
 
--- แก้ขอบมนด้านขวาของ Sidebar ให้ตรงกับกรอบหลัก
-local FixCorner = Instance.new("Frame")
-FixCorner.Size = UDim2.new(0, 10, 1, 0)
-FixCorner.Position = UDim2.new(1, -10, 0, 0)
-FixCorner.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
-FixCorner.BorderSizePixel = 0
-FixCorner.Parent = Sidebar
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Size = UDim2.new(1, -90, 1, 0)
+TitleLabel.Position = UDim2.new(0, 15, 0, 0)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.Text = "RTS HUB v5 — Separated Custom Edition"
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.TextSize = 14
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.Parent = Topbar
 
-local LogoLabel = Instance.new("TextLabel")
-LogoLabel.Size = UDim2.new(1, 0, 0, 60)
-LogoLabel.BackgroundTransparency = 1
-LogoLabel.Font = Enum.Font.GothamBold
-LogoLabel.Text = "RTS HUB v5"
-LogoLabel.TextColor3 = Color3.fromRGB(59, 130, 246) -- น้ำเงินสว่าง
-LogoLabel.TextSize = 16
-LogoLabel.Parent = Sidebar
-
--- =========================================================================
--- 🖥️ พื้นที่แสดงผลเนื้อหาหลักด้านขวา (Content Area)
--- =========================================================================
-local ContentArea = Instance.new("Frame")
-ContentArea.Size = UDim2.new(1, -175, 1, -20)
-ContentArea.Position = UDim2.new(0, 170, 0, 10)
-ContentArea.BackgroundTransparency = 1
-ContentArea.Parent = MainFrame
-
-local TitleHeader = Instance.new("TextLabel")
-TitleHeader.Size = UDim2.new(1, 0, 0, 40)
-TitleHeader.BackgroundTransparency = 1
-TitleHeader.Font = Enum.Font.GothamBold
-TitleHeader.Text = "Control Dashboard"
-TitleHeader.TextColor3 = Color3.fromRGB(240, 240, 245)
-TitleHeader.TextSize = 16
-TitleHeader.TextXAlignment = Enum.TextXAlignment.Left
-TitleHeader.Parent = ContentArea
-
--- ปุ่มปิดหน้าต่างมุมขวาบน
-local CloseBtn = Instance.new("TextButton")
-CloseBtn.Size = UDim2.new(0, 28, 0, 28)
-CloseBtn.Position = UDim2.new(1, -28, 0, 6)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(239, 68, 68)
-CloseBtn.Text = "✕"
-CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.TextSize = 12
-CloseBtn.Parent = ContentArea
+-- ปุ่มซ่อน/ย่อหน้าต่าง (ปุ่มกากบาทสีแดง ✕)
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size = UDim2.new(0, 28, 0, 28)
+CloseButton.Position = UDim2.new(1, -35, 0.5, -14)
+CloseButton.BackgroundColor3 = Color3.fromRGB(239, 68, 68)
+CloseButton.Text = "✕"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.TextSize = 12
+CloseButton.Parent = Topbar
 
 local CloseCorner = Instance.new("UICorner")
 CloseCorner.CornerRadius = UDim.new(0, 6)
-CloseCorner.Parent = CloseBtn
+CloseCorner.Parent = CloseButton
 
-CloseBtn.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
-end)
+-- =========================================================================
+-- 🔄 กลไกการย่อ - ขยาย หน้าต่าง (Minimize & Expand Logic)
+-- =========================================================================
+local function MinimizeUI()
+    MainFrame.Visible = false
+    ToggleButton.Visible = true
+end
 
--- พื้นที่ใส่ปุ่มฟังก์ชัน
-local ButtonContainer = Instance.new("ScrollingFrame")
-ButtonContainer.Size = UDim2.new(1, 0, 1, -55)
-ButtonContainer.Position = UDim2.new(0, 0, 0, 50)
-ButtonContainer.BackgroundTransparency = 1
-ButtonContainer.BorderSizePixel = 0
-ButtonContainer.CanvasSize = UDim2.new(0, 0, 0, 300)
-ButtonContainer.ScrollBarThickness = 3
-ButtonContainer.Parent = ContentArea
+local function ExpandUI()
+    MainFrame.Visible = true
+    ToggleButton.Visible = false
+end
+
+CloseButton.MouseButton1Click:Connect(MinimizeUI)
+ToggleButton.MouseButton1Click:Connect(ExpandUI)
+
+-- =========================================================================
+-- ⚙️ พื้นที่แสดงเมนูและปุ่มฟังก์ชัน (Content Container)
+-- =========================================================================
+local ContentContainer = Instance.new("ScrollingFrame")
+ContentContainer.Size = UDim2.new(1, -20, 1, -55)
+ContentContainer.Position = UDim2.new(0, 10, 0, 48)
+ContentContainer.BackgroundTransparency = 1
+ContentContainer.BorderSizePixel = 0
+ContentContainer.CanvasSize = UDim2.new(0, 0, 0, 500)
+ContentContainer.ScrollBarThickness = 4
+ContentContainer.Parent = MainFrame
 
 local UIListLayout = Instance.new("UIListLayout")
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Padding = UDim.new(0, 8)
-UIListLayout.Parent = ButtonContainer
+UIListLayout.Parent = ContentContainer
 
--- ฟังก์ชันสร้างปุ่มสไตล์ Dashboard ใหม่
-local function AddDashboardButton(name, callback)
+-- ฟังก์ชันสร้างปุ่มสไตล์โมเดิร์น
+local function CreateButton(text, callback)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -5, 0, 40)
-    btn.BackgroundColor3 = Color3.fromRGB(24, 24, 30)
+    btn.Size = UDim2.new(1, 0, 0, 36)
+    btn.BackgroundColor3 = Color3.fromRGB(24, 32, 47)
     btn.Font = Enum.Font.GothamMedium
-    btn.Text = "   " .. name
-    btn.TextColor3 = Color3.fromRGB(220, 220, 225)
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.TextSize = 13
-    btn.TextXAlignment = Enum.TextXAlignment.Left
-    btn.Parent = ButtonContainer
+    btn.Parent = ContentContainer
 
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 8)
+    corner.CornerRadius = UDim.new(0, 6)
     corner.Parent = btn
 
     btn.MouseButton1Click:Connect(callback)
 end
 
--- เพิ่มปุ่มจำลองฟังก์ชันหลัก
-AddDashboardButton("⚡ เพิ่มความเร็วเดิน (WalkSpeed = 50)", function()
+-- ฟังก์ชันกลางสำหรับโหลดสคริปต์ทีละตัวแยกอิสระ
+local function RunSingleScript(url, scriptName)
+    task.spawn(function()
+        local ok, code = pcall(function() return game:HttpGet(url) end)
+        if ok and code and #code > 0 then
+            local fn, loadErr = loadstring(code)
+            if fn then
+                local runOk, runErr = pcall(fn)
+                if runOk then
+                    print("✅ รัน " .. scriptName .. " สำเร็จ!")
+                else
+                    warn("⚠️ ข้อผิดพลาดในการรัน " .. scriptName .. ": " .. tostring(runErr))
+                end
+            else
+                warn("⚠️ รูปแบบโค้ด " .. scriptName .. " ไม่ถูกต้อง: " .. tostring(loadErr))
+            end
+        else
+            warn("⚠️ ไม่สามารถเชื่อมต่อลิงก์ของ " .. scriptName .. " ได้")
+        end
+    end)
+end
+
+-- =========================================================================
+-- 🚀 รายการปุ่มฟังก์ชันแยกอิสระ (แต่ละปุ่มทำงานแยกกัน)
+-- =========================================================================
+
+CreateButton("🌐 1. รันสคริปต์หลัก (Complete Edition)", function()
+    RunSingleScript("https://raw.githubusercontent.com/hacker0030mp/Hac/refs/heads/main/RTS-HUB%20v5%20-%20Complete%20Edition", "Complete Edition")
+end)
+
+CreateButton("🧩 2. รันสคริปต์โมดูล [.2]", function()
+    RunSingleScript("https://raw.githubusercontent.com/hacker0030mp/Hac/refs/heads/main/.2", "File .2")
+end)
+
+CreateButton("🧩 3. รันสคริปต์โมดูล [.3]", function()
+    RunSingleScript("https://raw.githubusercontent.com/hacker0030mp/Hac/refs/heads/main/.3", "File .3")
+end)
+
+CreateButton("📄 4. รันสคริปต์เอกสารระบบ [DOCUMENT]", function()
+    RunSingleScript("https://raw.githubusercontent.com/hacker0030mp/Hac/refs/heads/main/DOCUMENT", "DOCUMENT")
+end)
+
+CreateButton("⚡ เพิ่มความเร็วเดิน (WalkSpeed = 50)", function()
     pcall(function()
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
             LocalPlayer.Character.Humanoid.WalkSpeed = 50
@@ -161,7 +216,7 @@ AddDashboardButton("⚡ เพิ่มความเร็วเดิน (Wal
     end)
 end)
 
-AddDashboardButton("📍 รีเซ็ตตำแหน่งตัวละครขึ้นฟ้า", function()
+CreateButton("📍 รีเซ็ตตำแหน่งตัวละครขึ้นฟ้า", function()
     pcall(function()
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
             LocalPlayer.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame + Vector3.new(0, 10, 0)
@@ -169,23 +224,6 @@ AddDashboardButton("📍 รีเซ็ตตำแหน่งตัวละ�
     end)
 end)
 
-AddDashboardButton("🌐 รันระบบดาวน์โหลดอัตโนมัติ (เชื่อมต่อลิงก์หลัก)", function()
-    pcall(function()
-        local targetUrls = {
-            "https://raw.githubusercontent.com/hacker0030mp/Hac/refs/heads/main/RTS-HUB%20v5%20-%20Complete%20Edition",
-            "https://raw.githubusercontent.com/hacker0030mp/Hac/refs/heads/main/.2",
-            "https://raw.githubusercontent.com/hacker0030mp/Hac/refs/heads/main/.3"
-        }
-        for _, url in ipairs(targetUrls) do
-            local success, res = pcall(function() return game:HttpGet(url) end)
-            if success and res then
-                local fn = loadstring(res)
-                if fn then pcall(fn) end
-            end
-        end
-    end)
-end)
-
-AddDashboardButton("❌ ปิดการทำงานหน้าต่าง UI", function()
+CreateButton("❌ ทำลายและปิดการทำงาน UI ทั้งหมด", function()
     ScreenGui:Destroy()
 end)
