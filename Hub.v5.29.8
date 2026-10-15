@@ -1,5 +1,5 @@
 -- =========================================================================
--- RTS HUB v5.0 — MASTER ORGANIZED EXECUTOR & ADVANCED SYSTEM
+-- RTS HUB v5.29.8 — NO KEY SYSTEM & ULTIMATE ADVANCED EDITION
 -- พัฒนาโดย scope scout (Delta Executor & Roblox Latest Optimized)
 -- =========================================================================
 
@@ -35,28 +35,12 @@ pcall(function()
     WindUI:SetTheme("Violet_Master")
 end)
 
--- 3. ตารางคีย์ระบบ (100 คีย์มาตรฐาน)
-local VALID_KEYS = {
-    "HTML.KER.3307", "STR.KEY-8F2A9C4M-1E6T", "STR.KEY-3K7X2P9V-5H4R", "STR.KEY-9B1D6F8J-2W7Z", "STR.KEY-4L5T8Y3N-6Q2K", 
-    "STR.KEY-7M3H9C2X-1V8P", "STR.KEY-2F6R4B9D-5J1T", "STR.KEY-5N8K1W7H-3X9M", "STR.KEY-1P4V8Z2L-7C6Q", "STR.KEY-6X9T3J5F-4N2B",
-    "STR.KEY-9R2C7D1K-8H5W", "STR.KEY-3V8F4M6P-2T1L", "STR.KEY-7H1X5N9R-3J4Z", "STR.KEY-4B6W2T8C-9K5F", "STR.KEY-8J2P7Q1V-6M3H"
-}
-
--- 4. สร้างหน้าต่างหลัก
+-- 3. สร้างหน้าต่างหลัก (แบบไม่ใช้ Key System เข้าใช้งานได้ทันที)
 local Window = WindUI:CreateWindow({
-    Title = "RTS-HUB v5.0",
+    Title = "RTS-HUB v5.29.8",
     Icon = "door-open",
     Author = "by scope scout",
-    Folder = "RTS_KEY_SYSTEM",
-    KeySystem = {
-        Title = "RTS-HUB Verification",
-        Note = "Join our Discord to get your key!",
-        URL = "https://discord.gg/PKufHrB9zE",
-        SaveKey = true,
-        KeyValidator = function(key)
-            return table.find(VALID_KEYS, key) ~= nil
-        end,
-    }
+    Folder = "RTS_HUB_DATA",
 })
 
 -- บริการหลักและตัวแปรระบบ
@@ -66,7 +50,7 @@ local CoreGui = game:GetService("CoreGui")
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
--- 5. ระบบ TAG แสดงสถานะ (Ping & FPS)
+-- 4. ระบบ TAG แสดงสถานะ (Ping & FPS)
 local PingTag = Window:Tag({ Title = "Ping: 0ms", Color = Color3.fromRGB(100, 200, 255) })
 task.spawn(function()
     while true do
@@ -101,7 +85,7 @@ end)
 
 WindUI:Notify({ Title = "Success", Content = "เข้าสู่ระบบ RTS-HUB สำเร็จแล้ว!", Duration = 3 })
 
--- 6. ปุ่มซิปล็อคลอย (Floating Ziplock Button)
+-- 5. ปุ่มซิปล็อคลอย (Floating Ziplock Button) มุมซ้ายบน
 local ZiplockGui = Instance.new("ScreenGui")
 ZiplockGui.Name = "RTS_ZiplockGui"
 ZiplockGui.ResetOnSpawn = false
@@ -170,7 +154,6 @@ MainSection:Button({
                 local sName = (inputScriptName ~= "") and inputScriptName or "Un-named Script"
                 WindUI:Notify({ Title = "สำเร็จ", Content = "รันสคริปต์ " .. sName .. " สำเร็จ!", Duration = 3 })
                 
-                -- เพิ่มลงแท็บบันทึก
                 SavedSection:Button({
                     Title = "📁 " .. sName,
                     Callback = function()
@@ -179,7 +162,6 @@ MainSection:Button({
                     end
                 })
                 
-                -- เพิ่มลงประวัติ
                 local currentTime = os.date("%H:%M:%S - %d/%m/%Y")
                 HistorySection:Paragraph({
                     Title = "ชื่อ: " .. sName .." (".. currentTime ..")",
@@ -403,7 +385,7 @@ local TabInfo = Window:Tab({ Title = "ข้อมูล", Icon = "info" })
 local InfoSection = TabInfo:Section({ Title = "ช่องทางติดต่อและสนับสนุน", Box = true, Opened = true })
 
 InfoSection:Button({
-    Title = "คัดลอกลิงก์ Discord (Get Key)",
+    Title = "คัดลอกลิงก์ Discord",
     Callback = function()
         if setclipboard then
             setclipboard("https://discord.gg/PKufHrB9zE")
