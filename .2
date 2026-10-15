@@ -1,362 +1,345 @@
 -- =========================================================================
--- RTS HUB v5.0 — ULTIMATE STABLE EDITION (Delta Executor & Roblox Latest Optimized)
+-- RTS HUB v5.0 — ULTIMATE STABLE EDITION (Fixed KeySystem & Execution)
 -- พัฒนาโดย scope scout
 -- =========================================================================
 
--- ระบบป้องกันการโหลด UI และจัดการข้อผิดพลาดระดับสูง (Error Safe Handler)
-local SuccessHandler, ErrorMessage = pcall(function()
-    -- โหลดระบบ Icons V2 สำรองและอัปเดตล่าสุด
-    local IconsSuccess, IconsV2 = pcall(function()
-        return loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/Footagesus/Icons/main/Main-v2.lua"))()
-    end)
-    
-    if IconsSuccess and IconsV2 then
-        pcall(function() IconsV2.SetIconsType("lucide") end)
-    end
+-- โหลด WindUI อย่างปลอดภัยและเสถียรที่สุด
+local _version = "1.6.6"
+local success, WindUI = pcall(function()
+    return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/" .. _version .. "/main.lua"))()
+end)
 
-    -- ตรวจสอบและโหลด WindUI เวอร์ชันเสถียรล่าสุด
-    local _version = "1.6.6"
-    local success, WindUI = pcall(function()
-        return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/" .. _version .. "/main.lua"))()
+if not success or not WindUI then
+    success, WindUI = pcall(function()
+        return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
     end)
+end
 
-    if not success or not WindUI then
-        success, WindUI = pcall(function()
-            return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+if not success or not WindUI then
+    warn("❌ ไม่สามารถโหลด WindUI ได้! ตรวจสอบการเชื่อมต่ออินเทอร์เน็ตหรือตัวรัน")
+    return
+end
+
+-- =========================================================================
+-- 🎨 ธีมสีดำ เทา ขาว น้ำเงิน (Dark Blue Custom Theme)
+-- =========================================================================
+pcall(function()
+    WindUI:AddTheme({
+        Name = "RTS_DarkBlue_Optimized",
+        Primary = Color3.fromHex("#3b82f6"),
+        White = Color3.new(1,1,1),
+        Black = Color3.new(0,0,0),
+        Dialog = Color3.fromHex("#0f172a"),
+        Background = Color3.fromHex("#090d16"),
+        BackgroundTransparency = 0,
+        Hover = Color3.fromHex("#3b82f6"),
+        WindowBackground = Color3.fromHex("#090d16"),
+        WindowTopbarTitle = Color3.fromHex("#FFFFFF"),
+        WindowTopbarAuthor = Color3.fromHex("#94a3b8"),
+        Toggle = Color3.fromHex("#3b82f6"),
+        Slider = Color3.fromHex("#3b82f6"),
+        Notification = Color3.fromHex("#0f172a"),
+    })
+    WindUI:SetTheme("RTS_DarkBlue_Optimized")
+end)
+
+-- =========================================================================
+-- 🔑 ระบบหน้าต่างและ Key System (แก้ไขให้ผ่านแล้วรันหน้าต่างทันที)
+-- =========================================================================
+local Window = WindUI:CreateWindow({
+    Title = "RTS-HUB v5.0",
+    Icon = "dragon",
+    Author = "by scope scout",
+    KeySystem = {
+        Title = "RTS VERIFICATION",
+        Note = "HTML.KER.3307",
+        KeyValidator = function(key)
+            local validKeys = {"HTML.KER.3307"}
+            return table.find(validKeys, key) ~= nil
+        end,
+        SaveKey = true,
+        URL = "https://discord.gg/kgRcpVuDNd",
+    }
+})
+
+WindUI:Notify({
+    Title = "RTS-HUB v5.0",
+    Content = "✅ ยืนยันคีย์สำเร็จ โหลดระบบพร้อมใช้งาน!",
+    Duration = 3
+})
+
+-- บริการหลักและตัวแปรระบบ
+local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local Camera = workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+
+-- =========================================================================
+-- 🗂️ สร้างแท็บทั้งหมดตามโครงสร้าง v5
+-- =========================================================================
+local TabPrayer = Window:Tab({ Title = "prayer", Icon = "heart" })
+local TabTP = Window:Tab({ Title = "TP", Icon = "navigation" })
+local TabCombat = Window:Tab({ Title = "Kill", Icon = "sword" })
+local TabAdmin = Window:Tab({ Title = "Admin", Icon = "shield" })
+local TabESP = Window:Tab({ Title = "ESP & Teleport", Icon = "eye" })
+local TabSettings = Window:Tab({ Title = "Settings", Icon = "settings" })
+
+-- =========================================================================
+-- 1. TAB: prayer (ปรับแต่งตัวละคร / ค่าความเร็ว)
+-- =========================================================================
+local PrayerSec = TabPrayer:Section({ Title = "ระบบตัวละครพื้นฐาน", Box = true, Opened = true })
+
+PrayerSec:Slider({
+    Title = "ความเร็วเดิน (WalkSpeed)",
+    Default = 16,
+    Min = 16,
+    Max = 300,
+    Callback = function(v)
+        pcall(function()
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                LocalPlayer.Character.Humanoid.WalkSpeed = v
+            end
         end)
     end
+})
 
-    if not success or not WindUI then
-        warn("❌ ไม่สามารถโหลด WindUI ได้! ตรวจสอบการเชื่อมต่ออินเทอร์เน็ตหรือตัวรัน")
+PrayerSec:Slider({
+    Title = "พลังกระโดด (JumpPower)",
+    Default = 50,
+    Min = 50,
+    Max = 300,
+    Callback = function(v)
+        pcall(function()
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                LocalPlayer.Character.Humanoid.JumpPower = v
+            end
+        end)
+    end
+})
+
+-- =========================================================================
+-- 2. TAB: TP (ระบบเทเลพอร์ตด่วน)
+-- =========================================================================
+local TPSec = TabTP:Section({ Title = "จุดวาร์ปด่วน", Box = true, Opened = true })
+
+TPSec:Button({
+    Title = "📍 รีเซ็ตตำแหน่งคาแรคเตอร์ขึ้นฟ้าเล็กน้อย",
+    Callback = function()
+        pcall(function()
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                LocalPlayer.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame + Vector3.new(0, 10, 0)
+            end
+        end)
+    end
+})
+
+-- =========================================================================
+-- 3. TAB: Kill (ระบบล็อคเป้าและโจมตีอัจฉริยะ)
+-- =========================================================================
+local KillSec = TabCombat:Section({ Title = "ระบบการต่อสู้", Box = true, Opened = true })
+
+local AimEnabled = false
+local AimFOV = 150
+
+local function getClosestTarget()
+    local target, minDist = nil, AimFOV
+    local vp = Camera.ViewportSize
+    local center = Vector2.new(vp.X / 2, vp.Y / 2)
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character then
+            local hrp = p.Character:FindFirstChild("HumanoidRootPart")
+            local hum = p.Character:FindFirstChild("Humanoid")
+            if hrp and hum and hum.Health > 0 then
+                local sp, onScr = Camera:WorldToViewportPoint(hrp.Position)
+                if onScr then
+                    local d = (Vector2.new(sp.X, sp.Y) - center).Magnitude
+                    if d < minDist then
+                        minDist = d
+                        target = hrp
+                    end
+                end
+            end
+        end
+    end
+    return target
+end
+
+RunService.RenderStepped:Connect(function()
+    if AimEnabled then
+        pcall(function()
+            local t = getClosestTarget()
+            if t then Camera.CFrame = CFrame.new(Camera.CFrame.Position, t.Position) end
+        end)
+    end
+end)
+
+KillSec:Toggle({
+    Title = "🎮 เปิด/ปิด ล็อคเป้าอัตโนมัติ (AimLock)",
+    Default = false,
+    Callback = function(s)
+        AimEnabled = s
+        WindUI:Notify({ Title = "AimLock", Content = s and "เปิดใช้งานแล้ว" or "ปิดใช้งานแล้ว", Duration = 2 })
+    end
+})
+
+KillSec:Slider({
+    Title = "รัศมีองศาล็อคเป้า (FOV)",
+    Default = 150,
+    Min = 50,
+    Max = 500,
+    Callback = function(v)
+        AimFOV = v
+    end
+})
+
+-- =========================================================================
+-- 4. TAB: Admin (ช่องรันสคริปต์และเครื่องมือแอดมิน)
+-- =========================================================================
+local AdminSec = TabAdmin:Section({ Title = "Script Executor Console", Box = true, Opened = true })
+
+local inputScriptName = ""
+local inputScriptCode = ""
+
+AdminSec:Input({
+    Title = "ชื่อสคริปต์",
+    Placeholder = "พิมพ์ชื่อที่นี่...",
+    Callback = function(t) inputScriptName = t end
+})
+
+AdminSec:Input({
+    Title = "โค้ดสคริปต์ (Loadstring)",
+    Placeholder = "loadstring(game:HttpGet('...'))()",
+    Callback = function(t) inputScriptCode = t end
+})
+
+AdminSec:Button({
+    Title = "🟢 รันสคริปต์",
+    Callback = function()
+        if inputScriptCode == "" then
+            WindUI:Notify({ Title = "⚠️ แจ้งเตือน", Content = "กรุณากรอกโค้ดก่อนกดรัน", Duration = 2 })
+            return
+        end
+        local fn, err = loadstring(inputScriptCode)
+        if fn then
+            local ok, runErr = pcall(fn)
+            if ok then
+                WindUI:Notify({ Title = "✅ สำเร็จ", Content = "รันสคริปต์สำเร็จเรียบร้อย!", Duration = 3 })
+            else
+                WindUI:Notify({ Title = "❌ ผิดพลาด", Content = tostring(runErr), Duration = 4 })
+            end
+        else
+            WindUI:Notify({ Title = "❌ โค้ดผิดพลาด", Content = tostring(err), Duration = 4 })
+        end
+    end
+})
+
+-- =========================================================================
+-- 5. TAB: ESP & Teleport (ระบบมองทะลุ ESP รุ่นเสถียร)
+-- =========================================================================
+local ESPSect = TabESP:Section({ Title = "ระบบมองทะลุผู้เล่น (ESP)", Box = true, Opened = true })
+
+local ESPState = { Enabled = false, Box = true, Tracer = true, Name = true }
+local ESPDraws = {}
+
+local function ClearESP(p)
+    if ESPDraws[p] then
+        pcall(function()
+            for _, o in pairs(ESPDraws[p]) do
+                if o and typeof(o.Remove) == "function" then o:Remove() end
+            end
+        end)
+        ESPDraws[p] = nil
+    end
+end
+
+RunService.RenderStepped:Connect(function()
+    if not ESPState.Enabled then
+        for p in pairs(ESPDraws) do ClearESP(p) end
         return
     end
 
-    -- =========================================================================
-    -- 🎨 ธีมสีดำ เทา ขาว น้ำเงิน (Dark Blue Custom Theme - ปรับให้เข้ากับ UI ล่าสุด)
-    -- =========================================================================
     pcall(function()
-        WindUI:AddTheme({
-            Name = "RTS_DarkBlue_Optimized",
-            Primary = Color3.fromHex("#3b82f6"),
-            White = Color3.new(1,1,1),
-            Black = Color3.new(0,0,0),
-            Dialog = Color3.fromHex("#0f172a"),
-            Background = Color3.fromHex("#090d16"),
-            BackgroundTransparency = 0,
-            Hover = Color3.fromHex("#3b82f6"),
-            WindowBackground = Color3.fromHex("#090d16"),
-            WindowTopbarTitle = Color3.fromHex("#FFFFFF"),
-            WindowTopbarAuthor = Color3.fromHex("#94a3b8"),
-            Toggle = Color3.fromHex("#3b82f6"),
-            Slider = Color3.fromHex("#3b82f6"),
-            Notification = Color3.fromHex("#0f172a"),
-        })
-        WindUI:SetTheme("RTS_DarkBlue_Optimized")
-    end)
-
-    -- =========================================================================
-    -- 🔑 ระบบหน้าต่างและ Key System (รองรับ Delta Executor)
-    -- =========================================================================
-    local Window = WindUI:CreateWindow({
-        Title = "RTS-HUB v5.0",
-        Icon = "dragon",
-        Author = "by scope scout",
-        KeySystem = {
-            Title = "RTS VERIFICATION",
-            Note = "HTML.KER.3307",
-            KeyValidator = function(key)
-                local validKeys = {"HTML.KER.3307"}
-                return table.find(validKeys, key) ~= nil
-            end,
-            SaveKey = true,
-            URL = "https://discord.gg/kgRcpVuDNd",
-        }
-    })
-
-    WindUI:Notify({
-        Title = "RTS-HUB v5.0",
-        Content = "✅ โหลดระบบสำเร็จ (รองรับ Roblox ล่าสุด)",
-        Duration = 3
-    })
-
-    -- บริการหลักและตัวแปรระบบ
-    local HttpService = game:GetService("HttpService")
-    local RunService = game:GetService("RunService")
-    local Players = game:GetService("Players")
-    local Camera = workspace.CurrentCamera
-    local LocalPlayer = Players.LocalPlayer
-
-    -- =========================================================================
-    -- 🗂️ สร้างแท็บทั้งหมดตามโครงสร้าง v5
-    -- =========================================================================
-    local TabPrayer = Window:Tab({ Title = "prayer", Icon = "heart" })
-    local TabTP = Window:Tab({ Title = "TP", Icon = "navigation" })
-    local TabCombat = Window:Tab({ Title = "Kill", Icon = "sword" })
-    local TabAdmin = Window:Tab({ Title = "Admin", Icon = "shield" })
-    local TabESP = Window:Tab({ Title = "ESP & Teleport", Icon = "eye" })
-    local TabSettings = Window:Tab({ Title = "Settings", Icon = "settings" })
-
-    -- =========================================================================
-    -- 1. TAB: prayer (ปรับแต่งตัวละคร / ค่าความเร็ว)
-    -- =========================================================================
-    local PrayerSec = TabPrayer:Section({ Title = "ระบบตัวละครพื้นฐาน", Box = true, Opened = true })
-
-    PrayerSec:Slider({
-        Title = "ความเร็วเดิน (WalkSpeed)",
-        Default = 16,
-        Min = 16,
-        Max = 300,
-        Callback = function(v)
-            pcall(function()
-                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                    LocalPlayer.Character.Humanoid.WalkSpeed = v
-                end
-            end)
-        end
-    })
-
-    PrayerSec:Slider({
-        Title = "พลังกระโดด (JumpPower)",
-        Default = 50,
-        Min = 50,
-        Max = 300,
-        Callback = function(v)
-            pcall(function()
-                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                    LocalPlayer.Character.Humanoid.JumpPower = v
-                end
-            end)
-        end
-    })
-
-    -- =========================================================================
-    -- 2. TAB: TP (ระบบเทเลพอร์ตด่วน)
-    -- =========================================================================
-    local TPSec = TabTP:Section({ Title = "จุดวาร์ปด่วน", Box = true, Opened = true })
-
-    TPSec:Button({
-        Title = "📍 รีเซ็ตตำแหน่งคาแรคเตอร์ขึ้นฟ้าเล็กน้อย",
-        Callback = function()
-            pcall(function()
-                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                    LocalPlayer.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame + Vector3.new(0, 10, 0)
-                end
-            end)
-        end
-    })
-
-    -- =========================================================================
-    -- 3. TAB: Kill (ระบบล็อคเป้าและโจมตีอัจฉริยะ)
-    -- =========================================================================
-    local KillSec = TabCombat:Section({ Title = "ระบบการต่อสู้", Box = true, Opened = true })
-
-    local AimEnabled = false
-    local AimFOV = 150
-
-    local function getClosestTarget()
-        local target, minDist = nil, AimFOV
-        local vp = Camera.ViewportSize
-        local center = Vector2.new(vp.X / 2, vp.Y / 2)
         for _, p in ipairs(Players:GetPlayers()) do
             if p ~= LocalPlayer and p.Character then
-                local hrp = p.Character:FindFirstChild("HumanoidRootPart")
-                local hum = p.Character:FindFirstChild("Humanoid")
-                if hrp and hum and hum.Health > 0 then
-                    local sp, onScr = Camera:WorldToViewportPoint(hrp.Position)
+                local c = p.Character
+                local hrp = c:FindFirstChild("HumanoidRootPart")
+                local hum = c:FindFirstChild("Humanoid")
+                if not hrp or not hum or hum.Health <= 0 then
+                    ClearESP(p)
+                    continue
+                end
+
+                if not ESPDraws[p] and Drawing then
+                    ESPDraws[p] = {
+                        Box = Drawing.new("Square"),
+                        Line = Drawing.new("Line"),
+                        Text = Drawing.new("Text")
+                    }
+                    ESPDraws[p].Box.Thickness = 1.5; ESPDraws[p].Box.Filled = false; ESPDraws[p].Box.Color = Color3.fromRGB(59, 130, 246)
+                    ESPDraws[p].Line.Thickness = 1; ESPDraws[p].Line.Color = Color3.fromRGB(59, 130, 246)
+                    ESPDraws[p].Text.Size = 14; ESPDraws[p].Text.Center = true; ESPDraws[p].Text.Outline = true; ESPDraws[p].Text.Color = Color3.new(1, 1, 1)
+                end
+
+                local draws = ESPDraws[p]
+                if draws then
+                    local v, onScr = Camera:WorldToViewportPoint(hrp.Position)
+                    local head = c:FindFirstChild("Head")
+                    local tV = head and Camera:WorldToViewportPoint(head.Position + Vector3.new(0, 0.5, 0)) or v
+                    local bV = Camera:WorldToViewportPoint(hrp.Position - Vector3.new(0, 3, 0))
+                    local h = math.abs(tV.Y - bV.Y)
+                    local w = h / 2
+
+                    draws.Box.Visible = onScr and ESPState.Box
+                    draws.Line.Visible = onScr and ESPState.Tracer
+                    draws.Text.Visible = onScr and ESPState.Name
+
                     if onScr then
-                        local d = (Vector2.new(sp.X, sp.Y) - center).Magnitude
-                        if d < minDist then
-                            minDist = d
-                            target = hrp
+                        if ESPState.Box then
+                            draws.Box.Size = Vector2.new(w, h)
+                            draws.Box.Position = Vector2.new(v.X - w / 2, tV.Y)
+                        end
+                        if ESPState.Tracer then
+                            local vp = Camera.ViewportSize
+                            draws.Line.From = Vector2.new(vp.X / 2, vp.Y)
+                            draws.Line.To = Vector2.new(v.X, bV.Y)
+                        end
+                        if ESPState.Name then
+                            draws.Text.Text = p.Name
+                            draws.Text.Position = Vector2.new(v.X, tV.Y - 18)
                         end
                     end
-                end
-            end
-        end
-        return target
-    end
-
-    RunService.RenderStepped:Connect(function()
-        if AimEnabled then
-            pcall(function()
-                local t = getClosestTarget()
-                if t then Camera.CFrame = CFrame.new(Camera.CFrame.Position, t.Position) end
-            end)
-        end
-    end)
-
-    KillSec:Toggle({
-        Title = "🎮 เปิด/ปิด ล็อคเป้าอัตโนมัติ (AimLock)",
-        Default = false,
-        Callback = function(s)
-            AimEnabled = s
-            WindUI:Notify({ Title = "AimLock", Content = s and "เปิดใช้งานแล้ว" or "ปิดใช้งานแล้ว", Duration = 2 })
-        end
-    })
-
-    KillSec:Slider({
-        Title = "รัศมีองศาล็อคเป้า (FOV)",
-        Default = 150,
-        Min = 50,
-        Max = 500,
-        Callback = function(v)
-            AimFOV = v
-        end
-    })
-
-    -- =========================================================================
-    -- 4. TAB: Admin (ช่องรันสคริปต์และเครื่องมือแอดมิน)
-    -- =========================================================================
-    local AdminSec = TabAdmin:Section({ Title = "Script Executor Console", Box = true, Opened = true })
-
-    local inputScriptName = ""
-    local inputScriptCode = ""
-
-    AdminSec:Input({
-        Title = "ชื่อสคริปต์",
-        Placeholder = "พิมพ์ชื่อที่นี่...",
-        Callback = function(t) inputScriptName = t end
-    })
-
-    AdminSec:Input({
-        Title = "โค้ดสคริปต์ (Loadstring)",
-        Placeholder = "loadstring(game:HttpGet('...'))()",
-        Callback = function(t) inputScriptCode = t end
-    })
-
-    AdminSec:Button({
-        Title = "🟢 รันสคริปต์",
-        Callback = function()
-            if inputScriptCode == "" then
-                WindUI:Notify({ Title = "⚠️ แจ้งเตือน", Content = "กรุณากรอกโค้ดก่อนกดรัน", Duration = 2 })
-                return
-            end
-            local fn, err = loadstring(inputScriptCode)
-            if fn then
-                local ok, runErr = pcall(fn)
-                if ok then
-                    WindUI:Notify({ Title = "✅ สำเร็จ", Content = "รันสคริปต์สำเร็จเรียบร้อย!", Duration = 3 })
-                else
-                    WindUI:Notify({ Title = "❌ ผิดพลาด", Content = tostring(runErr), Duration = 4 })
                 end
             else
-                WindUI:Notify({ Title = "❌ โค้ดผิดพลาด", Content = tostring(err), Duration = 4 })
+                ClearESP(p)
             end
         end
-    })
-
-    -- =========================================================================
-    -- 5. TAB: ESP & Teleport (ระบบมองทะลุ ESP รุ่นเสถียร)
-    -- =========================================================================
-    local ESPSect = TabESP:Section({ Title = "ระบบมองทะลุผู้เล่น (ESP)", Box = true, Opened = true })
-
-    local ESPState = { Enabled = false, Box = true, Tracer = true, Name = true }
-    local ESPDraws = {}
-
-    local function ClearESP(p)
-        if ESPDraws[p] then
-            pcall(function()
-                for _, o in pairs(ESPDraws[p]) do
-                    if o and typeof(o.Remove) == "function" then o:Remove() end
-                end
-            end)
-            ESPDraws[p] = nil
-        end
-    end
-
-    RunService.RenderStepped:Connect(function()
-        if not ESPState.Enabled then
-            for p in pairs(ESPDraws) do ClearESP(p) end
-            return
-        end
-
-        pcall(function()
-            for _, p in ipairs(Players:GetPlayers()) do
-                if p ~= LocalPlayer and p.Character then
-                    local c = p.Character
-                    local hrp = c:FindFirstChild("HumanoidRootPart")
-                    local hum = c:FindFirstChild("Humanoid")
-                    if not hrp or not hum or hum.Health <= 0 then
-                        ClearESP(p)
-                        continue
-                    end
-
-                    if not ESPDraws[p] and Drawing then
-                        ESPDraws[p] = {
-                            Box = Drawing.new("Square"),
-                            Line = Drawing.new("Line"),
-                            Text = Drawing.new("Text")
-                        }
-                        ESPDraws[p].Box.Thickness = 1.5; ESPDraws[p].Box.Filled = false; ESPDraws[p].Box.Color = Color3.fromRGB(59, 130, 246)
-                        ESPDraws[p].Line.Thickness = 1; ESPDraws[p].Line.Color = Color3.fromRGB(59, 130, 246)
-                        ESPDraws[p].Text.Size = 14; ESPDraws[p].Text.Center = true; ESPDraws[p].Text.Outline = true; ESPDraws[p].Text.Color = Color3.new(1, 1, 1)
-                    end
-
-                    local draws = ESPDraws[p]
-                    if draws then
-                        local v, onScr = Camera:WorldToViewportPoint(hrp.Position)
-                        local head = c:FindFirstChild("Head")
-                        local tV = head and Camera:WorldToViewportPoint(head.Position + Vector3.new(0, 0.5, 0)) or v
-                        local bV = Camera:WorldToViewportPoint(hrp.Position - Vector3.new(0, 3, 0))
-                        local h = math.abs(tV.Y - bV.Y)
-                        local w = h / 2
-
-                        draws.Box.Visible = onScr and ESPState.Box
-                        draws.Line.Visible = onScr and ESPState.Tracer
-                        draws.Text.Visible = onScr and ESPState.Name
-
-                        if onScr then
-                            if ESPState.Box then
-                                draws.Box.Size = Vector2.new(w, h)
-                                draws.Box.Position = Vector2.new(v.X - w / 2, tV.Y)
-                            end
-                            if ESPState.Tracer then
-                                local vp = Camera.ViewportSize
-                                draws.Line.From = Vector2.new(vp.X / 2, vp.Y)
-                                draws.Line.To = Vector2.new(v.X, bV.Y)
-                            end
-                            if ESPState.Name then
-                                draws.Text.Text = p.Name
-                                draws.Text.Position = Vector2.new(v.X, tV.Y - 18)
-                            end
-                        end
-                    end
-                else
-                    ClearESP(p)
-                end
-            end
-        end)
     end)
-
-    Players.PlayerRemoving:Connect(ClearESP)
-
-    ESPSect:Toggle({
-        Title = "👁️ เปิด/ปิด ESP",
-        Default = false,
-        Callback = function(s)
-            ESPState.Enabled = s
-            WindUI:Notify({ Title = "ESP System", Content = s and "เปิดการทำงาน ESP" or "ปิดการทำงาน ESP", Duration = 2 })
-        end
-    })
-
-    ESPSect:Toggle({ Title = "📦 แสดงกรอบกล่อง (Box)", Default = true, Callback = function(s) ESPState.Box = s end })
-    ESPSect:Toggle({ Title = "📏 แสดงเส้นโยง (Tracer)", Default = true, Callback = function(s) ESPState.Tracer = s end })
-    ESPSect:Toggle({ Title = "🏷️ แสดงชื่อผู้เล่น", Default = true, Callback = function(s) ESPState.Name = s end })
-
-    -- =========================================================================
-    -- 6. TAB: Settings (ตั้งค่าเมนูและปุ่มทำลาย UI)
-    -- =========================================================================
-    local SettingsSec = TabSettings:Section({ Title = "การตั้งค่าหน้าต่างระบบ", Box = true, Opened = true })
-
-    SettingsSec:Button({
-        Title = "❌ ปิดการทำงานและลบ Hub UI",
-        Callback = function()
-            Window:Destroy()
-        end
-    })
 end)
 
-if not SuccessHandler then
-    warn("⚠️ RTS HUB Critical Error: " .. tostring(ErrorMessage))
-end
+Players.PlayerRemoving:Connect(ClearESP)
 
+ESPSect:Toggle({
+    Title = "👁️ เปิด/ปิด ESP",
+    Default = false,
+    Callback = function(s)
+        ESPState.Enabled = s
+        WindUI:Notify({ Title = "ESP System", Content = s and "เปิดการทำงาน ESP" or "ปิดการทำงาน ESP", Duration = 2 })
+    end
+})
+
+ESPSect:Toggle({ Title = "📦 แสดงกรอบกล่อง (Box)", Default = true, Callback = function(s) ESPState.Box = s end })
+ESPSect:Toggle({ Title = "📏 แสดงเส้นโยง (Tracer)", Default = true, Callback = function(s) ESPState.Tracer = s end })
+ESPSect:Toggle({ Title = "🏷️ แสดงชื่อผู้เล่น", Default = true, Callback = function(s) ESPState.Name = s end })
+
+-- =========================================================================
+-- 6. TAB: Settings (ตั้งค่าหน้าต่างระบบ)
+-- =========================================================================
+local SettingsSec = TabSettings:Section({ Title = "การตั้งค่าหน้าต่างระบบ", Box = true, Opened = true })
+
+SettingsSec:Button({
+    Title = "❌ ปิดการทำงานและลบ Hub UI",
+    Callback = function()
+        Window:Destroy()
+    end
+})
