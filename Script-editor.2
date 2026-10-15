@@ -1,0 +1,434 @@
+-- ========================================================
+-- Delta Script Hub - 3 Editor Boxes & 326 Save Slots
+-- ========================================================
+
+local HttpService = game:GetService("HttpService")
+
+local DeltaScriptHub = {
+    Editor = {
+        ScriptBuffer1 = "",
+        ScriptBuffer2 = "",
+        ScriptBuffer3 = "",
+        SaveSlots = {},
+        
+        SetScript1 = function(self, codeText) self.ScriptBuffer1 = codeText or "" end,
+        SetScript2 = function(self, codeText) self.ScriptBuffer2 = codeText or "" end,
+        SetScript3 = function(self, codeText) self.ScriptBuffer3 = codeText or "" end,
+        
+        RunScript = function(self, target)
+            local code = (target == 1 and self.ScriptBuffer1) or (target == 2 and self.ScriptBuffer2) or self.ScriptBuffer3
+            if code == "" then
+                return warn("[SYSTEM ERROR]: กรุณาใส่ Script ช่องที่ " .. target)
+            end
+            local func, err = loadstring(code)
+            if not func then
+                return warn("[SYSTEM ERROR] Syntax Error (" .. target .. "): " .. tostring(err))
+            end
+            local success, runErr = pcall(func)
+            if not success then
+                warn("[SYSTEM ERROR] Execution Error (" .. target .. "): " .. tostring(runErr))
+            else
+                print("[Editor] รัน Script ช่องที่ " .. target .. " สำเร็จ")
+            end
+        end,
+
+        AutoRunScript = function(self, enable)
+            if enable then
+                if writefile then
+                    writefile("DeltaAutoRun.lua", self.ScriptBuffer1)
+                    print("[Editor] เปิดใช้งาน AutoRun และบันทึกไฟล์เรียบร้อย")
+                else
+                    warn("[SYSTEM ERROR]: Executor นี้ไม่รองรับฟังก์ชัน writefile")
+                end
+            else
+                if isfile and delfile and isfile("DeltaAutoRun.lua") then
+                    delfile("DeltaAutoRun.lua")
+                    print("[Editor] ปิดการใช้งาน AutoRun และลบไฟล์แล้ว")
+                end
+            end
+        end,
+
+        -- ระบบบันทึก 326 ช่อง
+        SaveAllSlots = function(self)
+            if writefile then
+                local success, encoded = pcall(function()
+                    return HttpService:JSONEncode(self.SaveSlots)
+                end)
+                if success then
+                    writefile("Delta326Slots.json", encoded)
+                    print("[SaveSystem] บันทึกข้อมูล 326 ช่องสำเร็จ!")
+                end
+            end
+        end,
+
+        LoadAllSlots = function(self)
+            if readfile and isfile and isfile("Delta326Slots.json") then
+                local success, decoded = pcall(function()
+                    return HttpService:JSONDecode(readfile("Delta326Slots.json"))
+                end)
+                if success and type(decoded) == "table" then
+                    self.SaveSlots = decoded
+                    print("[SaveSystem] โหลดข้อมูล 326 ช่องสำเร็จ!")
+                end
+            end
+        end
+    }
+}
+
+-- โหลดข้อมูลบันทึกเดิมทันที
+DeltaScriptHub.Editor:LoadAllSlots()
+
+-- ตรวจสอบ AutoRun อัตโนมัติ
+task.spawn(function()
+    pcall(function()
+        if isfile and isfile("DeltaAutoRun.lua") then
+            local autoCode = readfile("DeltaAutoRun.lua")
+            if autoCode and autoCode ~= "" then
+                local func = loadstring(autoCode)
+                if func then
+                    task.spawn(func)
+                    print("[AutoRun] ทำงานอัตโนมัติจากไฟล์สำเร็จ")
+                end
+            end
+        end
+    end)
+end)
+
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+
+if CoreGui:FindFirstChild("DeltaMultiUI") then
+    CoreGui.DeltaMultiUI:Destroy()
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "DeltaMultiUI"
+ScreenGui.Parent = CoreGui
+_G.DeltaMultiInstance = ScreenGui
+
+-- หน้าต่างหลัก (ขนาดกะทัดรัด 3 ช่อง)
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 390, 0, 430)
+MainFrame.Position = UDim2.new(0.5, -195, 0.5, -215)
+MainFrame.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ScreenGui
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
+
+-- แถบหัวข้อ
+local TopBar = Instance.new("Frame")
+TopBar.Size = UDim2.new(1, 0, 0, 30)
+TopBar.BackgroundColor3 = Color3.fromRGB(32, 32, 40)
+TopBar.BorderSizePixel = 0
+TopBar.Parent = MainFrame
+Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 8)
+
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Size = UDim2.new(1, -20, 1, 0)
+TitleLabel.Position = UDim2.new(0, 8, 0, 0)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Text = "Delta Script Hub (3 Editors)"
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.TextSize = 13
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.Parent = TopBar
+
+-- ปุ่มปิด (ย่อ)
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 24, 0, 24)
+CloseBtn.Position = UDim2.new(1, -27, 0, 3)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.TextSize = 12
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.Parent = TopBar
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 5)
+
+-- ปุ่มย่อหน้าต่าง
+local MiniButton = Instance.new("TextButton")
+MiniButton.Name = "MiniButton"
+MiniButton.Size = UDim2.new(0, 45, 0, 45)
+MiniButton.Position = UDim2.new(0, 50, 0, 50)
+MiniButton.BackgroundColor3 = Color3.fromRGB(50, 160, 80)
+MiniButton.Text = "Δ"
+MiniButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+MiniButton.TextSize = 18
+MiniButton.Font = Enum.Font.GothamBold
+MiniButton.Visible = false
+MiniButton.Parent = ScreenGui
+Instance.new("UICorner", MiniButton).CornerRadius = UDim.new(0, 8)
+
+CloseBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = false
+    MiniButton.Visible = true
+end)
+MiniButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = true
+    MiniButton.Visible = false
+end)
+
+-- ฟังก์ชันลากเลื่อน
+local function MakeDraggable(guiObject)
+    local dragging, dragInput, dragStart, startPos
+    guiObject.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = guiObject.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
+        end
+    end)
+    guiObject.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            guiObject.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+end
+MakeDraggable(MainFrame)
+MakeDraggable(MiniButton)
+
+-- พื้นที่แสดงผล (ScrollingFrame หน้าต่างหลัก)
+local Container = Instance.new("ScrollingFrame")
+Container.Size = UDim2.new(1, -12, 1, -38)
+Container.Position = UDim2.new(0, 6, 0, 34)
+Container.BackgroundTransparency = 1
+Container.BorderSizePixel = 0
+Container.ScrollBarThickness = 3
+Container.CanvasSize = UDim2.new(0, 0, 0, 370)
+Container.Parent = MainFrame
+
+-- [ ช่องที่ 1 ]
+local BigBox = Instance.new("TextBox")
+BigBox.Size = UDim2.new(1, 0, 0, 90)
+BigBox.Position = UDim2.new(0, 0, 0, 5)
+BigBox.BackgroundColor3 = Color3.fromRGB(28, 28, 36)
+BigBox.TextColor3 = Color3.fromRGB(200, 255, 200)
+BigBox.PlaceholderText = "-- ช่องสี่เหลี่ยมหลัก (Script 1)..."
+BigBox.Text = ""
+BigBox.TextSize = 11
+BigBox.Font = Enum.Font.Code
+BigBox.MultiLine = true
+BigBox.ClearTextOnFocus = false
+BigBox.TextXAlignment = Enum.TextXAlignment.Left
+BigBox.TextYAlignment = Enum.TextYAlignment.Top
+BigBox.Parent = Container
+Instance.new("UICorner", BigBox).CornerRadius = UDim.new(0, 6)
+BigBox:GetPropertyChangedSignal("Text"):Connect(function()
+    DeltaScriptHub.Editor:SetScript1(BigBox.Text)
+end)
+
+-- [ ช่องที่ 2 และ 3 ]
+local SubBox1 = Instance.new("TextBox")
+SubBox1.Size = UDim2.new(0.48, 0, 0, 75)
+SubBox1.Position = UDim2.new(0, 0, 0, 102)
+SubBox1.BackgroundColor3 = Color3.fromRGB(28, 28, 36)
+SubBox1.TextColor3 = Color3.fromRGB(255, 220, 200)
+SubBox1.PlaceholderText = "-- ช่องย่อย 2..."
+SubBox1.Text = ""
+SubBox1.TextSize = 11
+SubBox1.Font = Enum.Font.Code
+SubBox1.MultiLine = true
+SubBox1.ClearTextOnFocus = false
+SubBox1.TextXAlignment = Enum.TextXAlignment.Left
+SubBox1.TextYAlignment = Enum.TextYAlignment.Top
+SubBox1.Parent = Container
+Instance.new("UICorner", SubBox1).CornerRadius = UDim.new(0, 6)
+SubBox1:GetPropertyChangedSignal("Text"):Connect(function()
+    DeltaScriptHub.Editor:SetScript2(SubBox1.Text)
+end)
+
+local SubBox2 = Instance.new("TextBox")
+SubBox2.Size = UDim2.new(0.48, 0, 0, 75)
+SubBox2.Position = UDim2.new(0.52, 0, 0, 102)
+SubBox2.BackgroundColor3 = Color3.fromRGB(28, 28, 36)
+SubBox2.TextColor3 = Color3.fromRGB(200, 220, 255)
+SubBox2.PlaceholderText = "-- ช่องย่อย 3..."
+SubBox2.Text = ""
+SubBox2.TextSize = 11
+SubBox2.Font = Enum.Font.Code
+SubBox2.MultiLine = true
+SubBox2.ClearTextOnFocus = false
+SubBox2.TextXAlignment = Enum.TextXAlignment.Left
+SubBox2.TextYAlignment = Enum.TextYAlignment.Top
+SubBox2.Parent = Container
+Instance.new("UICorner", SubBox2).CornerRadius = UDim.new(0, 6)
+SubBox2:GetPropertyChangedSignal("Text"):Connect(function()
+    DeltaScriptHub.Editor:SetScript3(SubBox2.Text)
+end)
+
+-- ปุ่ม Run และ AutoRun
+local RunBtn = Instance.new("TextButton")
+RunBtn.Size = UDim2.new(0.48, 0, 0, 32)
+RunBtn.Position = UDim2.new(0, 0, 0, 184)
+RunBtn.BackgroundColor3 = Color3.fromRGB(50, 160, 80)
+RunBtn.Text = "▶ Run Script"
+RunBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+RunBtn.Font = Enum.Font.GothamBold
+RunBtn.TextSize = 11
+RunBtn.Parent = Container
+Instance.new("UICorner", RunBtn).CornerRadius = UDim.new(0, 5)
+RunBtn.MouseButton1Click:Connect(function()
+    DeltaScriptHub.Editor:RunScript(1)
+end)
+
+local AutoRunBtn = Instance.new("TextButton")
+AutoRunBtn.Size = UDim2.new(0.48, 0, 0, 32)
+AutoRunBtn.Position = UDim2.new(0.52, 0, 0, 184)
+AutoRunBtn.BackgroundColor3 = Color3.fromRGB(180, 120, 50)
+AutoRunBtn.Text = "🔄 AutoRun: OFF"
+AutoRunBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoRunBtn.Font = Enum.Font.GothamBold
+AutoRunBtn.TextSize = 11
+AutoRunBtn.Parent = Container
+Instance.new("UICorner", AutoRunBtn).CornerRadius = UDim.new(0, 5)
+
+local autoState = false
+AutoRunBtn.MouseButton1Click:Connect(function()
+    autoState = not autoState
+    AutoRunBtn.Text = "🔄 AutoRun: " .. (autoState and "ON" or "OFF")
+    AutoRunBtn.BackgroundColor3 = autoState and Color3.fromRGB(50, 180, 90) or Color3.fromRGB(180, 120, 50)
+    DeltaScriptHub.Editor:AutoRunScript(autoState)
+end)
+
+-- ปุ่มเปิดหน้าต่างที่ 2 (พร้อมระบบบันทึก 326 ช่อง)
+local OpenSecondWinBtn = Instance.new("TextButton")
+OpenSecondWinBtn.Size = UDim2.new(1, 0, 0, 35)
+OpenSecondWinBtn.Position = UDim2.new(0, 0, 0, 224)
+OpenSecondWinBtn.BackgroundColor3 = Color3.fromRGB(70, 100, 200)
+OpenSecondWinBtn.Text = "📂 เปิดหน้าต่างระบบบันทึก (326 ช่อง)"
+OpenSecondWinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+OpenSecondWinBtn.Font = Enum.Font.GothamBold
+OpenSecondWinBtn.TextSize = 11
+OpenSecondWinBtn.Parent = Container
+Instance.new("UICorner", OpenSecondWinBtn).CornerRadius = UDim.new(0, 6)
+
+-- ฟังก์ชันสร้างหน้าต่างที่ 2 (มี 326 ช่องบันทึกแบบเลื่อนได้)
+local function CreateSecondWindow()
+    if CoreGui:FindFirstChild("DeltaSecondUI") then
+        CoreGui.DeltaSecondUI:Destroy()
+    end
+
+    local SecGui = Instance.new("ScreenGui")
+    SecGui.Name = "DeltaSecondUI"
+    SecGui.Parent = CoreGui
+
+    local SecFrame = Instance.new("Frame")
+    SecFrame.Size = UDim2.new(0, 420, 0, 360)
+    SecFrame.Position = UDim2.new(0.5, -210, 0.3, 0)
+    SecFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+    SecFrame.Parent = SecGui
+    Instance.new("UICorner", SecFrame).CornerRadius = UDim.new(0, 8)
+    MakeDraggable(SecFrame)
+
+    local SecTop = Instance.new("Frame")
+    SecTop.Size = UDim2.new(1, 0, 0, 28)
+    SecTop.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    SecTop.Parent = SecFrame
+    Instance.new("UICorner", SecTop).CornerRadius = UDim.new(0, 8)
+
+    local SecTitle = Instance.new("TextLabel")
+    SecTitle.Size = UDim2.new(1, -20, 1, 0)
+    SecTitle.Position = UDim2.new(0, 8, 0, 0)
+    SecTitle.BackgroundTransparency = 1
+    SecTitle.Text = "Save System - 326 Slots"
+    SecTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    SecTitle.TextSize = 12
+    SecTitle.Font = Enum.Font.GothamBold
+    SecTitle.Parent = SecTop
+
+    local SecClose = Instance.new("TextButton")
+    SecClose.Size = UDim2.new(0, 22, 0, 22)
+    SecClose.Position = UDim2.new(1, -25, 0, 3)
+    SecClose.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+    SecClose.Text = "X"
+    SecClose.TextColor3 = Color3.fromRGB(255, 255, 255)
+    SecClose.TextSize = 11
+    SecClose.Parent = SecTop
+    Instance.new("UICorner", SecClose).CornerRadius = UDim.new(0, 4)
+    SecClose.MouseButton1Click:Connect(function() SecGui:Destroy() end)
+
+    -- ปุ่มบันทึกข้อมูลทั้งหมด
+    local SaveAllBtn = Instance.new("TextButton")
+    SaveAllBtn.Size = UDim2.new(1, -16, 0, 30)
+    SaveAllBtn.Position = UDim2.new(0, 8, 0, 34)
+    SaveAllBtn.BackgroundColor3 = Color3.fromRGB(50, 160, 90)
+    SaveAllBtn.Text = "💾 บันทึกข้อมูลทั้งหมด (Save Slots)"
+    SaveAllBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    SaveAllBtn.Font = Enum.Font.GothamBold
+    SaveAllBtn.TextSize = 11
+    SaveAllBtn.Parent = SecFrame
+    Instance.new("UICorner", SaveAllBtn).CornerRadius = UDim.new(0, 5)
+    SaveAllBtn.MouseButton1Click:Connect(function()
+        DeltaScriptHub.Editor:SaveAllSlots()
+    end)
+
+    -- ScrollingFrame สำหรับ 326 ช่อง
+    local SlotScroll = Instance.new("ScrollingFrame")
+    SlotScroll.Size = UDim2.new(1, -16, 1, -78)
+    SlotScroll.Position = UDim2.new(0, 8, 0, 70)
+    SlotScroll.BackgroundTransparency = 1
+    SlotScroll.BorderSizePixel = 0
+    SlotScroll.ScrollBarThickness = 5
+    -- 326 ช่อง ช่องละ 30 พิกเซล
+    SlotScroll.CanvasSize = UDim2.new(0, 0, 0, 326 * 32)
+    SlotScroll.Parent = SecFrame
+
+    local UIList = Instance.new("UIListLayout")
+    UIList.Padding = UDim.new(0, 2)
+    UIList.Parent = SlotScroll
+
+    -- สร้าง 326 ช่องแบบไดนามิก
+    for i = 1, 326 do
+        local Row = Instance.new("Frame")
+        Row.Size = UDim2.new(1, -5, 0, 30)
+        Row.BackgroundColor3 = Color3.fromRGB(32, 32, 42)
+        Row.BorderSizePixel = 0
+        Row.Parent = SlotScroll
+        Instance.new("UICorner", Row).CornerRadius = UDim.new(0, 4)
+
+        local LabelNum = Instance.new("TextLabel")
+        LabelNum.Size = UDim2.new(0, 50, 1, 0)
+        LabelNum.BackgroundTransparency = 1
+        LabelNum.Text = "#" .. i
+        LabelNum.TextColor3 = Color3.fromRGB(150, 200, 255)
+        LabelNum.Font = Enum.Font.GothamBold
+        LabelNum.TextSize = 10
+        LabelNum.Parent = Row
+
+        local Box = Instance.new("TextBox")
+        Box.Size = UDim2.new(1, -60, 1, -4)
+        Box.Position = UDim2.new(0, 55, 0, 2)
+        Box.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
+        Box.TextColor3 = Color3.fromRGB(255, 255, 255)
+        Box.PlaceholderText = "ช่องบันทึกที่ " .. i .. "..."
+        Box.Text = DeltaScriptHub.Editor.SaveSlots[tostring(i)] or ""
+        Box.TextSize = 10
+        Box.Font = Enum.Font.Code
+        Box.ClearTextOnFocus = false
+        Box.TextXAlignment = Enum.TextXAlignment.Left
+        Box.Parent = Row
+        Instance.new("UICorner", Box).CornerRadius = UDim.new(0, 4)
+
+        Box:GetPropertyChangedSignal("Text"):Connect(function()
+            DeltaScriptHub.Editor.SaveSlots[tostring(i)] = Box.Text
+        end)
+    end
+end
+
+-- เปิดหน้าต่างที่ 2 ทันทีเมื่อคลิกปุ่ม
+OpenSecondWinBtn.MouseButton1Click:Connect(function()
+    CreateSecondWindow()
+end)
+
+return DeltaScriptHub
