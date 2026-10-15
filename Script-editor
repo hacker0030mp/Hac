@@ -1,5 +1,5 @@
 -- ========================================================
--- Delta Script Hub - Real AutoRun (Fast Loop / Spam Run)
+-- Delta Script Hub - 3 Editor Boxes (Compact & Draggable)
 -- ========================================================
 
 local DeltaScriptHub = {
@@ -7,8 +7,6 @@ local DeltaScriptHub = {
         ScriptBuffer1 = "",
         ScriptBuffer2 = "",
         ScriptBuffer3 = "",
-        AutoRunActive = false,
-        AutoRunThread = nil,
         
         SetScript1 = function(self, codeText) self.ScriptBuffer1 = codeText or "" end,
         SetScript2 = function(self, codeText) self.ScriptBuffer2 = codeText or "" end,
@@ -31,36 +29,15 @@ local DeltaScriptHub = {
             end
         end,
 
-        -- ระบบ AutoRun แบบรันรัวๆ / วนลูปทำงานจริง
         AutoRunScript = function(self, enable)
-            self.AutoRunActive = enable
-            
             if enable then
-                if self.AutoRunThread then
-                    task.cancel(self.AutoRunThread)
-                end
-                
-                -- สร้างเธรดรันสคริปต์ช่องที่ 1 วนซ้ำแบบรัวๆ
-                self.AutoRunThread = task.spawn(function()
-                    print("[Editor] เริ่มต้นระบบ AutoRun (รันรัวๆ)...")
-                    while self.AutoRunActive do
-                        if self.ScriptBuffer1 ~= "" then
-                            local func, err = loadstring(self.ScriptBuffer1)
-                            if func then
-                                pcall(func)
-                            end
-                        end
-                        -- ดีเลย์เล็กน้อย (เช่น 0.05 หรือ 0.1 วินาทีต่อรอบ) เพื่อไม่ให้เกมค้างหรือกระตุกจนเกินไป
-                        task.wait(0.1) 
-                    end
-                    print("[Editor] หยุดการทำงานระบบ AutoRun แล้ว")
-                end)
+                if writefile then writefile("DeltaAutoRun.lua", self.ScriptBuffer1) end
+                print("[Editor] เปิดใช้งาน AutoRun เรียบร้อย")
             else
-                if self.AutoRunThread then
-                    task.cancel(self.AutoRunThread)
-                    self.AutoRunThread = nil
+                if isfile and delfile and isfile("DeltaAutoRun.lua") then
+                    delfile("DeltaAutoRun.lua")
                 end
-                print("[Editor] ปิดการใช้งาน AutoRun เรียบร้อย")
+                print("[Editor] ปิดการใช้งาน AutoRun แล้ว")
             end
         end
     }
@@ -78,7 +55,7 @@ ScreenGui.Name = "DeltaMultiUI"
 ScreenGui.Parent = CoreGui
 _G.DeltaMultiInstance = ScreenGui
 
--- หน้าต่างหลัก
+-- หน้าต่างหลัก (ขนาดกะทัดรัด ปรับความสูงให้พอดี 3 ช่อง)
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(0, 390, 0, 430)
@@ -100,7 +77,7 @@ local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Size = UDim2.new(1, -20, 1, 0)
 TitleLabel.Position = UDim2.new(0, 8, 0, 0)
 TitleLabel.BackgroundTransparency = 1
-TitleLabel.Text = "Delta Script Hub (Real AutoRun)"
+TitleLabel.Text = "Delta Script Hub (3 Editors)"
 TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 TitleLabel.TextSize = 13
 TitleLabel.Font = Enum.Font.GothamBold
@@ -170,7 +147,7 @@ end
 MakeDraggable(MainFrame)
 MakeDraggable(MiniButton)
 
--- พื้นที่แสดงผล
+-- พื้นที่แสดงผล (ScrollingFrame เพื่อรองรับเนื้อหาทั้งหมด)
 local Container = Instance.new("ScrollingFrame")
 Container.Size = UDim2.new(1, -12, 1, -38)
 Container.Position = UDim2.new(0, 6, 0, 34)
@@ -180,13 +157,13 @@ Container.ScrollBarThickness = 3
 Container.CanvasSize = UDim2.new(0, 0, 0, 370)
 Container.Parent = MainFrame
 
--- [ ช่องที่ 1 ] ช่องหลักด้านบนสุด
+-- [ ช่องที่ 1 ] ช่องหลักด้านบนสุด (จำลอง 9x9)
 local BigBox = Instance.new("TextBox")
 BigBox.Size = UDim2.new(1, 0, 0, 90)
 BigBox.Position = UDim2.new(0, 0, 0, 5)
 BigBox.BackgroundColor3 = Color3.fromRGB(28, 28, 36)
 BigBox.TextColor3 = Color3.fromRGB(200, 255, 200)
-BigBox.PlaceholderText = "-- ช่องสี่เหลี่ยมหลัก (Script สำหรับ AutoRun)..."
+BigBox.PlaceholderText = "-- ช่องสี่เหลี่ยมหลัก (Script 1)..."
 BigBox.Text = ""
 BigBox.TextSize = 11
 BigBox.Font = Enum.Font.Code
@@ -243,6 +220,7 @@ SubBox2:GetPropertyChangedSignal("Text"):Connect(function()
 end)
 
 -- [ ปุ่มควบคุมใต้ช่องสี่เหลี่ยมคู่ ]
+-- ด้านซ้าย: Run Script (1 รอบ)
 local RunBtn = Instance.new("TextButton")
 RunBtn.Size = UDim2.new(0.48, 0, 0, 32)
 RunBtn.Position = UDim2.new(0, 0, 0, 184)
@@ -257,6 +235,7 @@ RunBtn.MouseButton1Click:Connect(function()
     DeltaScriptHub.Editor:RunScript(1)
 end)
 
+-- ด้านขวา: AutoRun Script
 local AutoRunBtn = Instance.new("TextButton")
 AutoRunBtn.Size = UDim2.new(0.48, 0, 0, 32)
 AutoRunBtn.Position = UDim2.new(0.52, 0, 0, 184)
@@ -271,7 +250,7 @@ Instance.new("UICorner", AutoRunBtn).CornerRadius = UDim.new(0, 5)
 local autoState = false
 AutoRunBtn.MouseButton1Click:Connect(function()
     autoState = not autoState
-    AutoRunBtn.Text = "🔄 AutoRun: " .. (autoState and "ON (รัวๆ)" or "OFF")
+    AutoRunBtn.Text = "🔄 AutoRun: " .. (autoState and "ON" or "OFF")
     AutoRunBtn.BackgroundColor3 = autoState and Color3.fromRGB(50, 180, 90) or Color3.fromRGB(180, 120, 50)
     DeltaScriptHub.Editor:AutoRunScript(autoState)
 end)
@@ -288,7 +267,7 @@ OpenSecondWinBtn.TextSize = 11
 OpenSecondWinBtn.Parent = Container
 Instance.new("UICorner", OpenSecondWinBtn).CornerRadius = UDim.new(0, 6)
 
--- ฟังก์ชันสร้างหน้าต่างที่ 2
+-- ฟังก์ชันสร้างหน้าต่างที่ 2 (หมวดหมู่ 2 อยู่ซ้าย, หมวดหมู่ 3 อยู่ขวา)
 local function CreateSecondWindow()
     if CoreGui:FindFirstChild("DeltaSecondUI") then
         CoreGui.DeltaSecondUI:Destroy()
@@ -299,8 +278,8 @@ local function CreateSecondWindow()
     SecGui.Parent = CoreGui
 
     local SecFrame = Instance.new("Frame")
-    SecFrame.Size = UDim2.new(0, 420, 0, 260)
-    SecFrame.Position = UDim2.new(0.5, -210, 0.3, 0)
+    SecFrame.Size = UDim2.new(0, 380, 0, 200)
+    SecFrame.Position = UDim2.new(0.5, -190, 0.3, 0)
     SecFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
     SecFrame.Parent = SecGui
     Instance.new("UICorner", SecFrame).CornerRadius = UDim.new(0, 8)
@@ -316,7 +295,7 @@ local function CreateSecondWindow()
     SecTitle.Size = UDim2.new(1, -20, 1, 0)
     SecTitle.Position = UDim2.new(0, 8, 0, 0)
     SecTitle.BackgroundTransparency = 1
-    SecTitle.Text = "Advanced Controls & Settings"
+    SecTitle.Text = "Advanced Functions"
     SecTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
     SecTitle.TextSize = 12
     SecTitle.Font = Enum.Font.GothamBold
@@ -336,7 +315,7 @@ local function CreateSecondWindow()
     -- หมวดหมู่ที่ 2 (ฝั่งซ้าย)
     local Cat2Frame = Instance.new("Frame")
     Cat2Frame.Size = UDim2.new(0.48, 0, 1, -38)
-    Cat2Frame.Position = UDim2.new(0, 5, 0, 32)
+    Cat2Frame.Position = UDim2.new(0, 6, 0, 32)
     Cat2Frame.BackgroundColor3 = Color3.fromRGB(32, 32, 42)
     Cat2Frame.Parent = SecFrame
     Instance.new("UICorner", Cat2Frame).CornerRadius = UDim.new(0, 6)
@@ -351,14 +330,73 @@ local function CreateSecondWindow()
     Cat2Title.Parent = Cat2Frame
 
     local BtnCat2 = Instance.new("TextButton")
-    BtnCat2.Size = UDim2.new(1, -10, 0, 35)
-    BtnCat2.Position = UDim2.new(0, 5, 0, 30)
+    BtnCat2.Size = UDim2.new(1, -12, 0, 35)
+    BtnCat2.Position = UDim2.new(0, 6, 0, 30)
     BtnCat2.BackgroundColor3 = Color3.fromRGB(50, 120, 180)
-    BtnCat2.Text = "รันฟังก์ชันหมวดที่ 2"
+    BtnCat2.Text = "รันฟังก์ชัน 2"
     BtnCat2.TextColor3 = Color3.fromRGB(255, 255, 255)
     BtnCat2.Font = Enum.Font.GothamBold
     BtnCat2.TextSize = 11
     BtnCat2.Parent = Cat2Frame
     Instance.new("UICorner", BtnCat2).CornerRadius = UDim.new(0, 5)
+    BtnCat2.MouseButton1Click:Connect(function()
+        print("[Category 2] ทำงานเรียบร้อย")
+    end)
 
-    -- หมวด
+    -- หมวดหมู่ที่ 3 (ฝั่งขวา)
+    local Cat3Frame = Instance.new("Frame")
+    Cat3Frame.Size = UDim2.new(0.48, 0, 1, -38)
+    Cat3Frame.Position = UDim2.new(0.51, 0, 0, 32)
+    Cat3Frame.BackgroundColor3 = Color3.fromRGB(32, 32, 42)
+    Cat3Frame.Parent = SecFrame
+    Instance.new("UICorner", Cat3Frame).CornerRadius = UDim.new(0, 6)
+
+    local Cat3Title = Instance.new("TextLabel")
+    Cat3Title.Size = UDim2.new(1, 0, 0, 25)
+    Cat3Title.BackgroundTransparency = 1
+    Cat3Title.Text = "⚙️ หมวดที่ 3 (ขวา)"
+    Cat3Title.TextColor3 = Color3.fromRGB(255, 180, 100)
+    Cat3Title.Font = Enum.Font.GothamBold
+    Cat3Title.TextSize = 11
+    Cat3Title.Parent = Cat3Frame
+
+    local BtnCat3 = Instance.new("TextButton")
+    BtnCat3.Size = UDim2.new(1, -12, 0, 35)
+    BtnCat3.Position = UDim2.new(0, 6, 0, 30)
+    BtnCat3.BackgroundColor3 = Color3.fromRGB(180, 100, 50)
+    BtnCat3.Text = "รันฟังก์ชัน 3"
+    BtnCat3.TextColor3 = Color3.fromRGB(255, 255, 255)
+    BtnCat3.Font = Enum.Font.GothamBold
+    BtnCat3.TextSize = 11
+    BtnCat3.Parent = Cat3Frame
+    Instance.new("UICorner", BtnCat3).CornerRadius = UDim.new(0, 5)
+    BtnCat3.MouseButton1Click:Connect(function()
+        print("[Category 3] ทำงานเรียบร้อย")
+    end)
+end
+
+-- ระบบรอ 1 นาทีก่อนเปิดหน้าต่างที่ 2
+local isWaiting = false
+OpenSecondWinBtn.MouseButton1Click:Connect(function()
+    if isWaiting then return end
+    isWaiting = true
+    
+    local countdown = 60
+    OpenSecondWinBtn.BackgroundColor3 = Color3.fromRGB(120, 120, 120)
+    
+    task.spawn(function()
+        while countdown > 0 do
+            OpenSecondWinBtn.Text = "⏳ กำลังรอ... (" .. countdown .. "s)"
+            task.wait(1)
+            countdown = countdown - 1
+        end
+        
+        OpenSecondWinBtn.Text = "📂 เปิดอีกหน้าต่าง (พร้อมแล้ว)"
+        OpenSecondWinBtn.BackgroundColor3 = Color3.fromRGB(70, 160, 80)
+        isWaiting = false
+        
+        CreateSecondWindow()
+    end)
+end)
+
+return DeltaScriptHub
