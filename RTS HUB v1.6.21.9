@@ -35,26 +35,12 @@ pcall(function()
     WindUI:SetTheme("Violet_Master")
 end)
 
--- 3. ตารางคีย์ระบบ (100 คีย์มาตรฐาน)
-local VALID_KEYS = {
-    "HTML.KER.3307", "STR.KEY-8F2A9C4M-1E6T", "STR.KEY-3K7X2P9V-5H4R", "STR.KEY-9B1D6F8J-2W7Z", "STR.KEY-4L5T8Y3N-6Q2K", 
-    "STR.KEY-7M3H9C2X-1V8P", "STR.KEY-2F6R4B9D-5J1T", "STR.KEY-5N8K1W7H-3X9M", "STR.KEY-1P4V8Z2L-7C6Q", "STR.KEY-6X9T3J5F-4N2B",
-    "STR.KEY-9R2C7D1K-8H5W", "STR.KEY-3V8F4M6P-2T1L", "STR.KEY-7H1X5N9R-3J4Z", "STR.KEY-4B6W2T8C-9K5F", "STR.KEY-8J2P7Q1V-6M3H"
-}
-
 -- 4. สร้างหน้าต่างหลัก
 local Window = WindUI:CreateWindow({
     Title = "RTS-HUB v5.0",
     Icon = "door-open",
     Author = "by scope scout",
     Folder = "RTS_KEY_SYSTEM",
-    KeySystem = {
-        Title = "RTS-HUB Verification",
-        Note = "Join our Discord to get your key!",
-        URL = "https://discord.gg/PKufHrB9zE",
-        SaveKey = true,
-        KeyValidator = function(key)
-            return table.find(VALID_KEYS, key) ~= nil
         end,
     }
 })
