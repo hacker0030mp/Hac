@@ -1,0 +1,138 @@
+local _version = "1.6.66"
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/" .. _version .. "/main.lua"))() 
+
+local Window = WindUI:CreateWindow({
+    Title = "WindUI Menu", -- ชื่อหน้าต่าง
+    Icon = "⚙️", -- ไอคอน
+    Author = "Settings", -- ข้อมูลเพิ่มเติม
+})
+
+-- กำหนดธีมสีแดงตามโค้ดสีจากภาพที่คุณส่งมา
+WindUI:AddTheme({
+    Name = "RedTheme",
+    
+    Accent = Color3.fromHex("#991b1b"),        -- สีสำเนียง / เน้นหลัก
+    Background = Color3.fromHex("#1c0606"),    -- พื้นหลังหลัก
+    Outline = Color3.fromHex("#fef2f2"),       -- โครงร่าง
+    Text = Color3.fromHex("#fef2f2"),          -- สีข้อความ
+    Placeholder = Color3.fromHex("#d95353"),   -- ตัวยึดตำแหน่ง
+    Button = Color3.fromHex("#dc2626"),        -- สีปุ่ม
+    Icon = Color3.fromHex("#ef4444"),          -- สีไอคอน
+})
+
+local Tab = Window:AddTab({ Title = "การตั้งค่า", Icon = "settings" })
+
+-- 1. ความเร็วในการเดิน (0 - 200)
+Tab:AddSlider({
+    Title = "ความเร็วในการเดิน",
+    Min = 0,
+    Max = 200,
+    Default = 16,
+    Callback = function(value)
+        local character = game.Players.LocalPlayer.Character
+        if character and character:FindFirstChildOfClass("Humanoid") then
+            character:FindFirstChildOfClass("Humanoid").WalkSpeed = value
+        end
+    end
+})
+
+-- 2. แรงกระโดด (0 - 200)
+Tab:AddSlider({
+    Title = "แรงกระโดด",
+    Min = 0,
+    Max = 200,
+    Default = 50,
+    Callback = function(value)
+        local character = game.Players.LocalPlayer.Character
+        if character and character:FindFirstChildOfClass("Humanoid") then
+            character:FindFirstChildOfClass("Humanoid").JumpPower = value
+        end
+    end
+})
+
+-- 3. ความเร็วในการบิน (0 - 200)
+local flightSpeed = 50
+Tab:AddSlider({
+    Title = "ความเร็วในการบิน",
+    Min = 0,
+    Max = 200,
+    Default = 50,
+    Callback = function(value)
+        flightSpeed = value
+    end
+})
+
+-- ตัวแปรระบบบิน
+local flying = false
+local bodyVelocity, bodyGyro
+local RunService = game:GetService("RunService")
+
+Tab:AddToggle({
+    Title = "ระบบบิน (ลอยตัวบนฟ้า)",
+    Default = false,
+    Callback = function(state)
+        flying = state
+        local player = game.Players.LocalPlayer
+        local character = player.Character
+        if not character then return end
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        local rootPart = character:FindFirstChild("HumanoidRootPart")
+        
+        if flying and rootPart and humanoid then
+            bodyVelocity = Instance.new("BodyVelocity")
+            bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+            bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+            bodyVelocity.Parent = rootPart
+            
+            bodyGyro = Instance.new("BodyGyro")
+            bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+            bodyGyro.CFrame = rootPart.CFrame
+            bodyGyro.Parent = rootPart
+            
+            humanoid.PlatformStand = true
+        else
+            if bodyVelocity then bodyVelocity:Destroy() end
+            if bodyGyro then bodyGyro:Destroy() end
+            if humanoid then humanoid.PlatformStand = false end
+        end
+    end
+})
+
+-- ลูปควบคุมการลอยตัวบนฟ้า
+RunService.RenderStepped:Connect(function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character
+    if not character then return end
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    
+    if flying and rootPart and humanoid and bodyVelocity then
+        local camera = workspace.CurrentCamera
+        local moveDirection = humanoid.MoveDirection
+        if moveDirection.Magnitude > 0 then
+            bodyVelocity.Velocity = camera.CFrame:VectorToWorldSpace(Vector3.new(moveDirection.X, 0, moveDirection.Z)) * flightSpeed
+        else
+            bodyVelocity.Velocity = Vector3.new(0, 0, 0) -- ยืนค้างนิ่งๆ บนฟ้าเมื่อไม่กดเดิน
+        end
+        bodyGyro.CFrame = camera.CFrame
+    end
+end)
+
+-- 4. ระบบกันตาย (God Mode)
+Tab:AddToggle({
+    Title = "ระบบกันตาย (God Mode)",
+    Default = false,
+    Callback = function(state)
+        local character = game.Players.LocalPlayer.Character
+        if character and character:FindFirstChildOfClass("Humanoid") then
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if state then
+                humanoid.MaxHealth = infinite =9999999999999999999999999999999999999999999999999999-- ค่าเลือดสูงสุดมหาศาล
+                humanoid.Health = humanoid.MaxHealth
+            else
+                humanoid.MaxHealth = 100
+                humanoid.Health = 100
+            end
+        end
+    end
+})
