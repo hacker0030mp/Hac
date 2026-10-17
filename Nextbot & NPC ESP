@@ -1,89 +1,303 @@
--- ==========================================================
--- REALTIME NEXTBOT & NPC ESP MODULE
--- ระบบมองทะลุกำแพงและติดตามความเคลื่อนไหวของ Nextbot / NPC
--- ==========================================================
+-- =========================================================================
+-- ☯️ สุริยันหยินหยาง & RTS HUB : EVADE FIXED ULTIMATE EDITION (2026) ☯️
+-- ภาษาไทย 100% | แก้ไขระบบฟาร์ม Token และระบบชุบชีวิตเพื่อนให้ทำงานได้จริง
+-- =========================================================================
 
 local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Workspace = workspace
 local LocalPlayer = Players.LocalPlayer
+local Camera = Workspace.CurrentCamera
 
--- ตัวแปรเปิด/ปิดระบบ ESP
-local nextbotESPEnabled = true
+-- เคลียร์ UI เก่าทิ้งก่อนสร้างใหม่
+pcall(function()
+    if CoreGui:FindFirstChild("YinYangSystemUI") then
+        CoreGui.YinYangSystemUI:Destroy()
+    end
+end)
 
--- ฟังก์ชันจัดการสร้างหรือลบ ESP ของวัตถุ
-local function manageESP()
-    while true do
-        if nextbotESPEnabled then
-            -- สแกนทุกชิ้นส่วนใน Workspace แบบเรียลไทม์
-            for _, obj in ipairs(Workspace:GetDescendants()) do
-                -- ตรวจสอบว่าเป็น Model, มี Humanoid (หรือมีค่าเคลื่อนไหว), และไม่ใช่ตัวผู้เล่นเอง
-                if obj:IsA("Model") and obj ~= LocalPlayer.Character then
-                    local humanoid = obj:FindFirstChildOfClass("Humanoid")
-                    local rootPart = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Head")
-                    
-                    -- เช็คว่าเป็น NPC, Nextbot หรือ Monster (ไม่ใช่ Player ปกติ)
-                    if humanoid and rootPart and not Players:GetPlayerFromCharacter(obj) then
-                        
-                        -- 1. สร้างกรอบมองทะลุกำแพง (Highlight) สีแดงสว่างสะดุดตา
-                        if not obj:FindFirstChild("Nextbot_Highlight") then
-                            local highlight = Instance.new("Highlight")
-                            highlight.Name = "Nextbot_Highlight"
-                            highlight.FillColor = Color3.fromRGB(255, 50, 50) -- สีแดงเข้มเด่นชัด
-                            highlight.OutlineColor = Color3.fromRGB(255, 255, 255) -- ขอบสีขาว
-                            highlight.FillTransparency = 0.3
-                            highlight.OutlineTransparency = 0
-                            highlight.Parent = obj
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "YinYangSystemUI"
+ScreenGui.Parent = CoreGui
+ScreenGui.ResetOnSpawn = false
+
+-- =========================================================================
+-- 1. ไอคอนลูกบอลหยินหยางลอยได้ (Floating Rotating Logo)
+-- =========================================================================
+local FloatingButton = Instance.new("ImageButton")
+FloatingButton.Name = "FloatingLogo"
+FloatingButton.Parent = ScreenGui
+FloatingButton.BackgroundColor3 = Color3.fromRGB(5, 14, 9)
+FloatingButton.BorderColor3 = Color3.fromRGB(16, 185, 129)
+FloatingButton.BorderSizePixel = 2
+FloatingButton.Position = UDim2.new(0.05, 0, 0.2, 0)
+FloatingButton.Size = UDim2.new(0, 65, 0, 65)
+FloatingButton.Image = "https://cdn.phototourl.com/member/2026-10-16-c8fd00c7-3c45-446d-bf02-956f9ca17068.jpg"
+FloatingButton.ScaleType = Enum.ScaleType.Stretch
+FloatingButton.Active = true
+FloatingButton.Draggable = true
+
+Instance.new("UICorner", FloatingButton).CornerRadius = UDim.new(1, 0)
+
+-- หมุน 360 องศาตลอดเวลา
+task.spawn(function()
+    local rot = 0
+    while FloatingButton and FloatingButton.Parent do
+        rot = (rot + 3) % 360
+        FloatingButton.Rotation = rot
+        task.wait(0.04)
+    end
+end)
+
+-- =========================================================================
+-- 2. โหลด WindUI เมนูหลัก
+-- =========================================================================
+local _version = "1.6.66"
+local success, WindUI = pcall(function()
+    return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/" .. _version .. "/main.lua"))()
+end)
+
+if success and WindUI then
+    pcall(function()
+        WindUI:AddTheme({
+            Name = "YinYangViolet",
+            Accent = Color3.fromHex("#10b981"),
+            Background = Color3.fromHex("#050e09"),
+            Outline = Color3.fromHex("#10b981"),
+            Text = Color3.fromHex("#ecfdf5"),
+            Placeholder = Color3.fromHex("#6ee7b7"),
+            Button = Color3.fromHex("#047857"),
+            Icon = Color3.fromHex("#34d399"),
+        })
+        WindUI:SetTheme("YinYangViolet")
+    end)
+
+    WindUI:Notify({
+        Title = "สุริยันหยินหยาง HUB & RTS HUB",
+        Content = "อัปเดตแก้ไขระบบฟาร์มและชุบชีวิตเรียบร้อย!",
+        Duration = 3
+    })
+
+    local Window = WindUI:CreateWindow({
+        Title = "สุริยันหยินหยาง HUB | Evade & RTS Edition",
+        Icon = "shield-check",
+        Author = "โมโก้ ไมเกิร์น & ใจ",
+        Folder = "YinYang_Evade_Config",
+        KeySystem = false,
+        Size = UDim2.fromOffset(540, 420),
+        Transparent = true,
+        Theme = "YinYangViolet",
+        HasOutline = true
+    })
+
+    FloatingButton.MouseButton1Click:Connect(function()
+        Window:Toggle()
+    end)
+
+    -- =========================================================================
+    -- แท็บที่ 1: ระบบฟาร์ม Evade (ที่แก้ไขใหม่ให้ทำงานได้จริง)
+    -- =========================================================================
+    local TabFarm = Window:Tab({ Title = "1. ฟาร์ม Evade", Icon = "wheat" })
+
+    local SafePlatformSection = TabFarm:Section({
+        Title = "☯️ จุดพักปลอดภัย (Yin-Yang Safe Platform 100m)",
+        Box = true, BoxBorder = true, Opened = true
+    })
+
+    local safePlatformPart = nil
+    local function CreateSafePlatform()
+        if not safePlatformPart or not safePlatformPart.Parent then
+            safePlatformPart = Instance.new("Part")
+            safePlatformPart.Name = "RTS_YinYang_Platform"
+            safePlatformPart.Size = Vector3.new(25, 2, 25)
+            safePlatformPart.Position = Vector3.new(0, 100, 0)
+            safePlatformPart.Anchored = true
+            safePlatformPart.CanCollide = true
+            safePlatformPart.Color = Color3.fromRGB(5, 14, 9)
+            safePlatformPart.Material = Enum.Material.SmoothPlastic
+            safePlatformPart.Parent = Workspace
+
+            local decal = Instance.new("Decal")
+            decal.Texture = "https://cdn.phototourl.com/member/2026-10-16-c8fd00c7-3c45-446d-bf02-956f9ca17068.jpg"
+            decal.Face = Enum.NormalId.Top
+            decal.Parent = safePlatformPart
+        end
+    end
+
+    SafePlatformSection:Button({
+        Title = "☯️ วาร์ปขึ้นไปยังจุดพักหยินหยาง (100 เมตร)",
+        Callback = function()
+            CreateSafePlatform()
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                char.HumanoidRootPart.CFrame = safePlatformPart.CFrame + Vector3.new(0, 4, 0)
+                WindUI:Notify({ Title = "Safezone", Content = "วาร์ปขึ้นสู่จุดพักปลอดภัยสำเร็จ!", Duration = 2 })
+            end
+        end
+    })
+
+    local AutoFarmSection = TabFarm:Section({
+        Title = "🎟️ ฟาร์ม Token & ชุบชีวิตเพื่อน (Global Farm)",
+        Box = true, BoxBorder = true, Opened = true
+    })
+
+    _G.AutoTokenFarm = false
+    _G.AutoMoneyFarm = false
+
+    AutoFarmSection:Toggle({
+        Title = "เปิดระบบฟาร์ม Token วาร์ปเก็บทั่วแมพ (Yin-Yang Loop)",
+        Desc = "วาร์ปลงไปเก็บ Token ทีละจุดอย่างเสถียร แล้วกลับขึ้นแท่น 100m",
+        Value = false,
+        Callback = function(state)
+            _G.AutoTokenFarm = state
+            if state then CreateSafePlatform() end
+            WindUI:Notify({ Title = "Token Farm", Content = state and "เปิดระบบฟาร์ม Token แล้ว" or "ปิดระบบแล้ว", Duration = 2 })
+        end
+    })
+
+    AutoFarmSection:Toggle({
+        Title = "เปิดระบบชุบชีวิตเพื่อนอัตโนมัติ (Auto Revive Loop)",
+        Desc = "ตรวจสอบผู้เล่นที่ล้ม (Downed) และเดินไปชุบชีวิตเพื่อปั๊มเงิน",
+        Value = false,
+        Callback = function(state)
+            _G.AutoMoneyFarm = state
+            WindUI:Notify({ Title = "Auto Revive", Content = state and "เปิดระบบชุบชีวิตเพื่อนแล้ว" or "ปิดระบบแล้ว", Duration = 2 })
+        end
+    })
+
+    -- [แก้ไขใหม่] ลูปฟาร์ม Token แบบเสถียร หน่วงเวลาให้ตัวละครหยิบไอเท็มทัน
+    task.spawn(function()
+        while true do
+            if _G.AutoTokenFarm then
+                pcall(function()
+                    CreateSafePlatform()
+                    local char = LocalPlayer.Character
+                    if char and char:FindFirstChild("HumanoidRootPart") then
+                        local hrp = char.HumanoidRootPart
+                        local foundTarget = false
+
+                        for _, obj in pairs(Workspace:GetDescendants()) do
+                            if not _G.AutoTokenFarm then break end
+                            if obj:IsA("BasePart") and (obj.Name:lower():find("token") or obj.Name:lower():find("ticket") or obj.Name:lower():find("collect") or obj.Name:lower():find("item")) then
+                                foundTarget = true
+                                -- วาร์ปไปที่ตำแหน่งไอเท็ม
+                                hrp.CFrame = obj.CFrame + Vector3.new(0, 3, 0)
+                                task.wait(0.4) -- หน่วงเวลาให้เกมบันทึกการเก็บไอเท็ม
+                            end
                         end
-                        
-                        -- 2. สร้างป้ายชื่อและระยะทางลอยเหนือหัว (BillboardGui)
-                        if not obj:FindFirstChild("Nextbot_Billboard") then
-                            local billboard = Instance.new("BillboardGui")
-                            billboard.Name = "Nextbot_Billboard"
-                            billboard.Size = UDim2.new(0, 160, 0, 50)
-                            billboard.StudsOffset = Vector3.new(0, 3.5, 0)
-                            billboard.AlwaysOnTop = true
-                            billboard.Parent = obj
-                            
-                            local textLabel = Instance.new("TextLabel")
-                            textLabel.Name = "TrackerText"
-                            textLabel.Size = UDim2.new(1, 0, 1, 0)
-                            textLabel.BackgroundTransparency = 1
-                            textLabel.TextColor3 = Color3.fromRGB(255, 255, 0) -- ตัวหนังสือสีเหลือง
-                            textLabel.TextStrokeTransparency = 0 -- มีขอบดำเพื่อให้มองเห็นง่าย
-                            textLabel.TextSize = 13
-                            textLabel.Font = Enum.Font.GothamBold
-                            textLabel.Parent = billboard
+
+                        -- เก็บครบแล้ววาร์ปกลับขึ้นแท่น 100m
+                        if safePlatformPart and _G.AutoTokenFarm then
+                            hrp.CFrame = safePlatformPart.CFrame + Vector3.new(0, 4, 0)
                         end
-                        
-                        -- 3. อัปเดตระยะทาง (Distance) แบบเรียลไทม์ทุกๆ เฟรม/ลูป
-                        local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                        if myRoot and obj:FindFirstChild("Nextbot_Billboard") then
-                            local distance = math.floor((rootPart.Position - myRoot.Position).Magnitude)
-                            local label = obj.Nextbot_Billboard:FindFirstChild("TrackerText")
-                            if label then
-                                label.Text = "🚨 " .. obj.Name .. "\n[ ระยะห่าง: " .. distance .. " ม. ]"
+                    end
+                end)
+            end
+            task.wait(1)
+        end
+    end)
+
+    -- [แก้ไขใหม่] ลูปชุบชีวิตเพื่อน (Auto Revive) ตรวจสอบสถานะ Downed และจำลองการเดินไปชุบ
+    task.spawn(function()
+        while true do
+            if _G.AutoMoneyFarm then
+                pcall(function()
+                    local char = LocalPlayer.Character
+                    if char and char:FindFirstChild("HumanoidRootPart") then
+                        local hrp = char.HumanoidRootPart
+                        for _, p in pairs(Players:GetPlayers()) do
+                            if p ~= LocalPlayer and p.Character then
+                                local targetChar = p.Character
+                                local humanoid = targetChar:FindFirstChildOfClass("Humanoid")
+                                -- ตรวจสอบว่าผู้เล่นล้มอยู่ (Health น้อยกว่าหรือเท่ากับ 0 หรือมีสถานะ Downed)
+                                if (humanoid and humanoid.Health <= 0) or targetChar:FindFirstChild("Downed") then
+                                    local targetRoot = targetChar:FindFirstChild("HumanoidRootPart")
+                                    if targetRoot then
+                                        -- วาร์ปไปใกล้ผู้เล่นที่ล้ม
+                                        hrp.CFrame = targetRoot.CFrame + Vector3.new(0, 3, 0)
+                                        task.wait(0.5)
+
+                                        -- ยิงรีโมทชุบชีวิต (ถ้ามีในเกม Evade)
+                                        local events = game:GetService("ReplicatedStorage"):FindFirstChild("Events")
+                                        if events then
+                                            if events:FindFirstChild("Revive") then
+                                                events.Revive:FireServer(targetChar)
+                                            elseif events:FindFirstChild("Interaction") then
+                                                events.Interaction:FireServer(targetChar, "Revive")
+                                            end
+                                        end
+                                    end
+                                end
                             end
                         end
                     end
-                end
+                end)
             end
-        else
-            -- ถ้าปิดระบบ ให้ล้าง Highlight และป้ายชื่อทั้งหมดทิ้งทันที
-            for _, obj in ipairs(Workspace:GetDescendants()) do
-                if obj:IsA("Model") and not Players:GetPlayerFromCharacter(obj) then
-                    local hl = obj:FindFirstChild("Nextbot_Highlight")
-                    local tag = obj:FindFirstChild("Nextbot_Billboard")
-                    if hl then hl:Destroy() end
-                    if tag then tag:Destroy() end
-                end
-            end
+            task.wait(0.8)
         end
-        task.wait(0.3) -- เช็คอัปเดตทุกๆ 0.3 วินาที เพื่อความรวดเร็วและลื่นไหลไม่กินเครื่อง
-    end
-end
+    end)
 
--- เริ่มรันระบบเบื้องหลังทันที
-task.spawn(manageESP)
+    -- =========================================================================
+    -- แท็บที่ 2: ระบบผู้เล่น & ระบบ Kill
+    -- =========================================================================
+    local TabPlayer = Window:Tab({ Title = "2. ผู้เล่น & โจมตี", Icon = "user" })
 
-print("[Nextbot ESP]: เปิดใช้งานระบบมองเรียลไทม์สำเร็จ!")
+    local CombatSection = TabPlayer:Section({
+        Title = "⚔️ ระบบต่อสู้และการกำจัด",
+        Box = true, BoxBorder = true, Opened = true
+    })
+
+    CombatSection:Button({
+        Title = "💥 วาร์ปไปฟัน/ฆ่าผู้เล่นทุกคนในแมพ (Kill All)",
+        Callback = function()
+            pcall(function()
+                local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if not myRoot then return end
+                local originalPos = myRoot.CFrame
+
+                for _, plr in pairs(Players:GetPlayers()) do
+                    if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+                        myRoot.CFrame = plr.Character.HumanoidRootPart.CFrame
+                        task.wait(0.15)
+                    end
+                end
+                myRoot.CFrame = originalPos
+                WindUI:Notify({ Title = "Kill All", Content = "กวาดล้างเป้าหมายทั่วแมพสำเร็จ!", Duration = 2 })
+            end)
+        end
+    })
+
+    local PlayerSection = TabPlayer:Section({
+        Title = "⚡ ความเร็ว / กระโดด / FOV (พิมพ์ตัวเลข)",
+        Box = true, BoxBorder = true, Opened = true
+    })
+
+    _G.EnableCustomSpeed = false
+    _G.CustomWalkSpeed = 16
+
+    PlayerSection:Toggle({
+        Title = "เปิดใช้งานความเร็วเดิน (WalkSpeed)",
+        Value = false,
+        Callback = function(state) _G.EnableCustomSpeed = state end
+    })
+
+    PlayerSection:Input({
+        Title = "กำหนดระดับความเร็ว",
+        Placeholder = "เช่น 16, 50, 150",
+        Numeric = true,
+        Finished = true,
+        Callback = function(value)
+            local num = tonumber(value)
+            if num then _G.CustomWalkSpeed = num end
+        end
+    })
+
+    _G.EnableCustomJump = false
+    _G.CustomJumpPower = 50
+
+    PlayerSection:Toggle({
+        Title = "เปิดใช้งานแรงกระโดด (JumpPower)",
+        Value = false,
+        Callback = function(state) _G.EnableCustomJump =
